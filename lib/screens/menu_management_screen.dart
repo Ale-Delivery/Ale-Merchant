@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
+import '../widgets/common_widgets.dart';
 
 class MenuManagementScreen extends StatefulWidget {
   const MenuManagementScreen({super.key});
@@ -164,19 +165,11 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: _primary))
           : _items.isEmpty
-              ? Center(
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.restaurant_menu_rounded, color: _muted, size: 64),
-                    const SizedBox(height: 12),
-                    const Text('No menu items yet', style: TextStyle(color: _muted, fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 18),
-                    ElevatedButton.icon(
-                      onPressed: () => _showAddEditDialog(),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add First Item'),
-                      style: ElevatedButton.styleFrom(backgroundColor: _primary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    ),
-                  ]),
+              ? EmptyState(
+                  icon: Icons.restaurant_menu_rounded,
+                  message: 'No menu items yet',
+                  actionLabel: 'Add First Item',
+                  onAction: () => _showAddEditDialog(),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),

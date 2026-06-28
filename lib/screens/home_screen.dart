@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
+import '../widgets/common_widgets.dart';
 
 class SellerHomeScreen extends StatefulWidget {
   const SellerHomeScreen({super.key});
@@ -20,11 +22,19 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   int _pendingOrders = 0;
   int _totalMenuItems = 0;
   bool _loading = true;
+  StreamSubscription? _realtimeSub;
 
   @override
   void initState() {
     super.initState();
     _loadDashboard();
+    _subscribeToNewOrders();
+  }
+
+  @override
+  void dispose() {
+    _realtimeSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadDashboard() async {
@@ -32,10 +42,21 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     if (userId == null) return;
 
     try {
-      final shop = await Supabase.instance.client.from('Restaurants').select().eq('owner_id', userId).maybeSingle();
+      final shop = await Supabase.instance.client
+          .from('Restaurants')
+          .select()
+          .eq('owner_id', userId)
+          .maybeSingle();
       if (shop != null) {
-        final orders = await Supabase.instance.client.from('Orders').select('id').eq('restaurant_id', shop['id']).eq('status', 'pending');
-        final items = await Supabase.instance.client.from('Menu_Items').select('id').eq('restaurant_id', shop['id']);
+        final orders = await Supabase.instance.client
+            .from('Orders')
+            .select('id')
+            .eq('restaurant_id', shop['id'])
+            .eq('status', 'pending');
+        final items = await Supabase.instance.client
+            .from('Menu_Items')
+            .select('id')
+            .eq('restaurant_id', shop['id']);
 
         if (mounted) {
           setState(() {
@@ -53,6 +74,44 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     }
   }
 
+  void _subscribeToNewOrders() {
+    _realtimeSub?.cancel();
+    _realtimeSub = Supabase.instance.client
+        .from('Orders')
+        .stream(primaryKey: ['id'])
+        .listen((rows) {
+      if (!mounted || _shop == null) return;
+      final restaurantId = _shop!['id'];
+      final newPending = rows
+          .where((r) =>
+              r['restaurant_id'] == restaurantId &&
+              r['status'] == 'pending')
+          .length;
+      if (newPending != _pendingOrders) {
+        setState(() => _pendingOrders = newPending);
+        if (newPending > 0) {
+          _showNewOrderNotification();
+        }
+      }
+    });
+  }
+
+  void _showNewOrderNotification() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('New order received!', style: TextStyle(fontWeight: FontWeight.w600)),
+        backgroundColor: _primary,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'View',
+          textColor: Colors.white,
+          onPressed: () => SellerNavigator.orderManagement(context),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -66,10 +125,18 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(icon: const Icon(Icons.logout, color: _muted), onPressed: () async {
-            await LocalStorageService.clearSession();
-            if (mounted) SellerNavigator.phoneAuth(context);
-          }),
+          IconButton(
+            icon: const Icon(Icons.person_outline_rounded, color: _muted),
+            onPressed: () => SellerNavigator.profile(context),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.logout, color: _muted),
+            onPressed: () async {
+              await LocalStorageService.clearSession();
+              if (mounted) SellerNavigator.phoneAuth(context);
+            },
+          ),
         ],
       ),
       body: _shop == null ? _buildNoShop() : _buildDashboard(),
@@ -85,7 +152,10 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           children: [
             Container(
               width: 80, height: 80,
-              decoration: BoxDecoration(color: const Color(0xFFFFF3EE), borderRadius: BorderRadius.circular(24)),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3EE),
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: const Icon(Icons.store_rounded, color: _primary, size: 40),
             ),
             const SizedBox(height: 24),
@@ -98,7 +168,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               icon: const Icon(Icons.add_rounded),
               label: const Text('Create Shop'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _primary, foregroundColor: Colors.white,
+                backgroundColor: _primary,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
@@ -129,19 +200,33 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(shop['name'] ?? 'My Shop', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                      child: Text(
+                        shop['name'] ?? 'My Shop',
+                        style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800),
+                      ),
                     ),
                     const Icon(Icons.check_circle_rounded, color: Colors.white, size: 28),
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(shop['category'] ?? '', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14)),
+                Text(
+                  shop['category'] ?? '',
+                  style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    _statPill(Icons.star_rounded, '${shop['rating'] ?? 'N/A'}', Colors.white.withOpacity(0.2)),
+                    StatPill(
+                      icon: Icons.star_rounded,
+                      label: '${shop['rating'] ?? 'N/A'}',
+                      bgColor: Colors.white.withOpacity(0.2),
+                    ),
                     const SizedBox(width: 10),
-                    _statPill(Icons.access_time_rounded, shop['delivery_time'] ?? 'N/A', Colors.white.withOpacity(0.2)),
+                    StatPill(
+                      icon: Icons.access_time_rounded,
+                      label: shop['delivery_time'] ?? 'N/A',
+                      bgColor: Colors.white.withOpacity(0.2),
+                    ),
                   ],
                 ),
               ],
@@ -152,9 +237,25 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           // Stats cards
           Row(
             children: [
-              Expanded(child: _statCard('Pending Orders', '$_pendingOrders', Icons.receipt_long_rounded, const Color(0xFFFFF3EE), _primary)),
+              Expanded(
+                child: StatCard(
+                  label: 'Pending Orders',
+                  value: '$_pendingOrders',
+                  icon: Icons.receipt_long_rounded,
+                  bgColor: const Color(0xFFFFF3EE),
+                  fgColor: _primary,
+                ),
+              ),
               const SizedBox(width: 14),
-              Expanded(child: _statCard('Menu Items', '$_totalMenuItems', Icons.restaurant_menu_rounded, const Color(0xFFEAF8EF), const Color(0xFF299653))),
+              Expanded(
+                child: StatCard(
+                  label: 'Menu Items',
+                  value: '$_totalMenuItems',
+                  icon: Icons.restaurant_menu_rounded,
+                  bgColor: const Color(0xFFEAF8EF),
+                  fgColor: const Color(0xFF299653),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 28),
@@ -162,54 +263,23 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           // Quick actions
           const Text('Quick Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
           const SizedBox(height: 14),
-          _actionTile(Icons.edit_rounded, 'Edit Shop Details', () => SellerNavigator.shopSetup(context)),
-          _actionTile(Icons.restaurant_menu_rounded, 'Manage Menu Items', () => SellerNavigator.menuManagement(context)),
-          _actionTile(Icons.receipt_long_rounded, 'View Orders ($_pendingOrders pending)', () => SellerNavigator.orderManagement(context)),
-        ],
-      ),
-    );
-  }
-
-  Widget _statCard(String label, String value, IconData icon, Color bg, Color fg) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(width: 42, height: 42, decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: fg, size: 20)),
-          const SizedBox(height: 14),
-          Text(value, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _ink)),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
-  Widget _actionTile(IconData icon, String label, VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(children: [Icon(icon, color: _primary, size: 22), const SizedBox(width: 14), Expanded(child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink))), const Icon(Icons.chevron_right_rounded, color: _muted)]),
+          ActionTile(
+            icon: Icons.edit_rounded,
+            title: 'Edit Shop Details',
+            onTap: () => SellerNavigator.shopSetup(context),
           ),
-        ),
+          ActionTile(
+            icon: Icons.restaurant_menu_rounded,
+            title: 'Manage Menu Items',
+            onTap: () => SellerNavigator.menuManagement(context),
+          ),
+          ActionTile(
+            icon: Icons.receipt_long_rounded,
+            title: 'View Orders ($_pendingOrders pending)',
+            onTap: () => SellerNavigator.orderManagement(context),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _statPill(IconData icon, String label, Color bg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, color: Colors.white70, size: 14), const SizedBox(width: 4), Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))]),
     );
   }
 }

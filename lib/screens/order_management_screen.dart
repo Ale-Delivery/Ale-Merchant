@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
+import '../navigation/seller_navigator.dart';
+import '../widgets/common_widgets.dart';
 
 class OrderManagementScreen extends StatefulWidget {
   const OrderManagementScreen({super.key});
@@ -108,7 +110,10 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator(color: _primary))
                 : _orders.isEmpty
-                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.receipt_long_rounded, color: _muted, size: 64), const SizedBox(height: 12), Text('No ${_statusLabel(_filterStatus)} orders', style: const TextStyle(color: _muted, fontSize: 16))]))
+                    ? EmptyState(
+                        icon: Icons.receipt_long_rounded,
+                        message: 'No ${_statusLabel(_filterStatus)} orders',
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: _orders.length,
@@ -117,29 +122,36 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                           final status = order['status'] ?? 'pending';
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(children: [
-                                  Expanded(child: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: const TextStyle(fontWeight: FontWeight.w800, color: _ink))),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(color: _statusColor(status).withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-                                    child: Text(_statusLabel(status), style: TextStyle(color: _statusColor(status), fontSize: 11, fontWeight: FontWeight.w700)),
-                                  ),
-                                ]),
-                                const SizedBox(height: 10),
-                                Text('Rs. ${order['total']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _primary)),
-                                const SizedBox(height: 6),
-                                Text('Address: ${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: _muted, fontSize: 12)),
-                                if (order['delivery_notes'] != null && order['delivery_notes'].toString().isNotEmpty) ...[
-                                  const SizedBox(height: 2),
-                                  Text('Notes: ${order['delivery_notes']}', style: const TextStyle(color: _muted, fontSize: 12)),
-                                ],
-                                const SizedBox(height: 12),
-                                if (status == 'pending')
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () async {
+                                final updated = await SellerNavigator.orderDetail(context, orderId: order['id']);
+                                if (updated == true && mounted) _loadOrders();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(children: [
+                                      Expanded(child: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: const TextStyle(fontWeight: FontWeight.w800, color: _ink))),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(color: _statusColor(status).withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                                        child: Text(_statusLabel(status), style: TextStyle(color: _statusColor(status), fontSize: 11, fontWeight: FontWeight.w700)),
+                                      ),
+                                    ]),
+                                    const SizedBox(height: 10),
+                                    Text('Rs. ${order['total']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _primary)),
+                                    const SizedBox(height: 6),
+                                    Text('Address: ${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: _muted, fontSize: 12)),
+                                    if (order['delivery_notes'] != null && order['delivery_notes'].toString().isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text('Notes: ${order['delivery_notes']}', style: const TextStyle(color: _muted, fontSize: 12)),
+                                    ],
+                                    const SizedBox(height: 12),
+                                    if (status == 'pending')
                                   Row(children: [
                                     Expanded(
                                       child: ElevatedButton(
@@ -180,7 +192,9 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                                   ),
                               ],
                             ),
-                          );
+                          ),
+                        ),
+                      );
                         },
                       ),
           ),

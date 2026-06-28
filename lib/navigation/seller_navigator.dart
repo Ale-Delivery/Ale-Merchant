@@ -6,6 +6,8 @@ import '../screens/home_screen.dart';
 import '../screens/shop_setup_screen.dart';
 import '../screens/menu_management_screen.dart';
 import '../screens/order_management_screen.dart';
+import '../screens/order_detail_screen.dart';
+import '../screens/profile_screen.dart';
 import 'app_routes.dart';
 
 class SellerNavigator {
@@ -31,6 +33,11 @@ class SellerNavigator {
         return _route(const MenuManagementScreen());
       case AppRoutes.orderManagement:
         return _route(const OrderManagementScreen());
+      case AppRoutes.orderDetail:
+        final orderId = settings.arguments as String;
+        return _route(OrderDetailScreen(orderId: orderId));
+      case AppRoutes.profile:
+        return _route(const SellerProfileScreen());
       default:
         return _route(const SplashScreen());
     }
@@ -81,6 +88,21 @@ class SellerNavigator {
   static void orderManagement(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const OrderManagementScreen()),
+    );
+  }
+
+  static Future<bool?> orderDetail(BuildContext context, {required String orderId}) {
+    return Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => OrderDetailScreen(orderId: orderId),
+        settings: const RouteSettings(name: AppRoutes.orderDetail),
+      ),
+    );
+  }
+
+  static Future<void> profile(BuildContext context) {
+    return Navigator.of(context).push(
+      _route(const SellerProfileScreen()),
     );
   }
 
