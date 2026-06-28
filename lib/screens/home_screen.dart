@@ -16,20 +16,21 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   static const _primary = Color(0xFFFF6B35);
   static const _ink = Color(0xFF1E1E2C);
   static const _muted = Color(0xFF7D8491);
-  static const _surface = Color(0xFFF7F8FA);
+  static const _surface = Color(0xFFF5F6FA);
+  static const _cardWhite = Color(0xFFFFFFFF);
 
   Map<String, dynamic>? _shop;
   int _pendingOrders = 0;
   int _totalMenuItems = 0;
   List<Map<String, dynamic>> _recentOrders = [];
+  List<Map<String, dynamic>> _previousOrders = [];
   bool _loading = true;
   StreamSubscription? _realtimeSub;
 
   @override
   void initState() {
     super.initState();
-    _loadDashboard();
-    _subscribeToNewOrders();
+    _loadDashboard().then((_) => _subscribeToRealtime());
   }
 
   @override
@@ -62,16 +63,16 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             .select('id')
             .eq('restaurant_id', shopId);
 
-        final pending = (orders as List)
-            .where((o) => o['status'] == 'pending')
-            .toList();
+        final orderList = List<Map<String, dynamic>>.from(orders as List);
+        final pending = orderList.where((o) => o['status'] == 'pending').toList();
 
         if (mounted) {
           setState(() {
             _shop = shop;
             _pendingOrders = pending.length;
             _totalMenuItems = (items as List).length;
-            _recentOrders = List<Map<String, dynamic>>.from(orders);
+            _previousOrders = List.from(_recentOrders);
+            _recentOrders = orderList;
             _loading = false;
           });
         }
@@ -91,15 +92,105 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     _loadDashboard();
   }
 
-  void _subscribeToNewOrders() {
+  void _subscribeToRealtime() {
     _realtimeSub?.cancel();
+    if (_shop == null) return;
+    final shopId = _shop!['id'];
+
     _realtimeSub = Supabase.instance.client
         .from('Orders')
         .stream(primaryKey: ['id'])
+        .eq('restaurant_id', shopId)
         .listen((rows) {
-      if (!mounted || _shop == null) return;
-      _loadDashboard();
+      if (!mounted) return;
+      final previousStatuses = <String, String>{};
+      for (final o in _recentOrders) {
+        if (o['id'] != null) previousStatuses[o['id'].toString()] = o['status']?.toString() ?? '';
+      }
+
+      _loadDashboard().then((_) {
+        if (!mounted) return;
+        for (final row in rows) {
+          final id = row['id']?.toString() ?? '';
+          final newStatus = row['status']?.toString() ?? '';
+          final oldStatus = previousStatuses[id];
+          if (oldStatus != null && oldStatus != newStatus) {
+            _showStatusChangeNotification(id, oldStatus, newStatus);
+          }
+        }
+      });
     });
+  }
+
+  void _showStatusChangeNotification(String orderId, String oldStatus, String newStatus) {
+    final shortId = orderId.length > 8 ? '#${orderId.substring(0, 8)}' : '#$orderId';
+    final label = _statusLabel(newStatus);
+    final Color color = _statusColor(newStatus);
+    final String message = _statusChangeMessage(oldStatus, newStatus);
+    final IconData icon = _statusIcon(newStatus);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$shortId — $label', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                  Text(message, style: const TextStyle(fontSize: 11, color: Colors.white70)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'View',
+          textColor: Colors.white,
+          onPressed: () => SellerNavigator.orderDetail(context, orderId: orderId),
+        ),
+      ),
+    );
+  }
+
+  String _statusChangeMessage(String old, String updated) {
+    switch (updated) {
+      case 'accepted':
+        return 'Order has been accepted';
+      case 'preparing':
+        return 'Food is being prepared';
+      case 'ready':
+        return 'Order is ready for delivery';
+      case 'delivered':
+        return 'Order has been delivered';
+      case 'cancelled':
+        return 'Order was cancelled';
+      default:
+        return 'Status updated to $updated';
+    }
+  }
+
+  IconData _statusIcon(String status) {
+    switch (status) {
+      case 'accepted':
+        return Icons.check_circle_outline;
+      case 'preparing':
+        return Icons.restaurant_rounded;
+      case 'ready':
+        return Icons.delivery_dining;
+      case 'delivered':
+        return Icons.check_circle_rounded;
+      case 'cancelled':
+        return Icons.cancel_rounded;
+      default:
+        return Icons.info_outline;
+    }
   }
 
   String _timeAgo(String? iso) {
@@ -115,12 +206,20 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'pending': return const Color(0xFFF59E0B);
-      case 'accepted': return const Color(0xFF3B82F6);
-      case 'preparing': return const Color(0xFF8B5CF6);
-      case 'ready': return const Color(0xFF10B981);
-      case 'delivered': return const Color(0xFF6B7280);
-      default: return _muted;
+      case 'pending':
+        return const Color(0xFFF59E0B);
+      case 'accepted':
+        return const Color(0xFF3B82F6);
+      case 'preparing':
+        return const Color(0xFF8B5CF6);
+      case 'ready':
+        return const Color(0xFF10B981);
+      case 'delivered':
+        return const Color(0xFF6B7280);
+      case 'cancelled':
+        return const Color(0xFFEF4444);
+      default:
+        return _muted;
     }
   }
 
@@ -139,7 +238,10 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator(color: _primary)));
+      return Scaffold(
+        backgroundColor: _surface,
+        body: const Center(child: CircularProgressIndicator(color: _primary)),
+      );
     }
 
     return Scaffold(
@@ -148,20 +250,10 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Alee Seller', style: TextStyle(color: _ink, fontWeight: FontWeight.w800)),
+            const Text('Alee Seller', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 20)),
             if (_pendingOrders > 0) ...[
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: _primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$_pendingOrders',
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800),
-                ),
-              ),
+              _pendingBadge(_pendingOrders),
             ],
           ],
         ),
@@ -191,35 +283,62 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     );
   }
 
+  Widget _pendingBadge(int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF6B35), Color(0xFFFF8C61)],
+        ),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(color: _primary.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Text(
+        '$count',
+        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800),
+      ),
+    );
+  }
+
   Widget _buildNoShop() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 80, height: 80,
+              width: 96, height: 96,
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3EE),
-                borderRadius: BorderRadius.circular(24),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFF3EE), Color(0xFFFFE0D0)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
               ),
-              child: const Icon(Icons.store_rounded, color: _primary, size: 40),
+              child: const Icon(Icons.store_rounded, color: _primary, size: 44),
             ),
-            const SizedBox(height: 24),
-            const Text('No Shop Yet', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _ink)),
-            const SizedBox(height: 8),
-            const Text('Create your restaurant to start receiving orders', textAlign: TextAlign.center, style: TextStyle(color: _muted, fontSize: 14)),
             const SizedBox(height: 28),
-            ElevatedButton.icon(
-              onPressed: () => SellerNavigator.shopSetup(context),
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Create Shop'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            const Text('Welcome to Alee Seller', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: _ink, letterSpacing: -0.5)),
+            const SizedBox(height: 10),
+            const Text('Create your restaurant and start receiving orders', textAlign: TextAlign.center, style: TextStyle(color: _muted, fontSize: 15, height: 1.5)),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: () => SellerNavigator.shopSetup(context),
+                icon: const Icon(Icons.add_rounded, size: 22),
+                label: const Text('Create Shop', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
               ),
             ),
           ],
@@ -234,14 +353,22 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     final nonPendingOrders = _recentOrders.where((o) => o['status'] != 'pending').take(5).toList();
 
     return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       children: [
-        // Shop card
+        // Shop card — premium gradient
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: _primary,
-            borderRadius: BorderRadius.circular(20),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A1A2E), Color(0xFF2D2D44)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(color: const Color(0xFF1A1A2E).withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 8)),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,33 +376,57 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      shop['name'] ?? 'My Shop',
-                      style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          shop['name'] ?? 'My Shop',
+                          style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                shop['category'] ?? '',
+                                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.circle, color: _primary, size: 6),
+                            const SizedBox(width: 8),
+                            Text(
+                              shop['address'] ?? '',
+                              style: const TextStyle(color: Colors.white54, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 28),
+                  Container(
+                    width: 48, height: 48,
+                    decoration: BoxDecoration(
+                      color: _primary.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.check_circle_rounded, color: _primary, size: 24),
+                  ),
                 ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                shop['category'] ?? '',
-                style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Row(
                 children: [
-                  StatPill(
-                    icon: Icons.star_rounded,
-                    label: '${shop['rating'] ?? 'N/A'}',
-                    bgColor: Colors.white.withOpacity(0.2),
-                  ),
+                  StatPill(icon: Icons.star_rounded, label: '${shop['rating'] ?? '4.5'}', bgColor: Colors.white.withOpacity(0.12)),
                   const SizedBox(width: 10),
-                  StatPill(
-                    icon: Icons.access_time_rounded,
-                    label: shop['delivery_time'] ?? 'N/A',
-                    bgColor: Colors.white.withOpacity(0.2),
-                  ),
+                  StatPill(icon: Icons.access_time_rounded, label: shop['delivery_time'] ?? '25 min', bgColor: Colors.white.withOpacity(0.12)),
+                  const SizedBox(width: 10),
+                  StatPill(icon: Icons.delivery_dining, label: shop['delivery_fee'] ?? 'Free', bgColor: Colors.white.withOpacity(0.12)),
                 ],
               ),
             ],
@@ -283,32 +434,20 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         ),
         const SizedBox(height: 24),
 
-        // Stats cards
+        // Stats — cleaner cards
         Row(
           children: [
             Expanded(
               child: GestureDetector(
                 onTap: () => SellerNavigator.orderManagement(context),
-                child: StatCard(
-                  label: 'Pending Orders',
-                  value: '$_pendingOrders',
-                  icon: Icons.receipt_long_rounded,
-                  bgColor: const Color(0xFFFFF3EE),
-                  fgColor: _primary,
-                ),
+                child: _statCard('Pending', '$_pendingOrders', Icons.receipt_long_rounded, _primary),
               ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: GestureDetector(
                 onTap: () => SellerNavigator.menuManagement(context),
-                child: StatCard(
-                  label: 'Menu Items',
-                  value: '$_totalMenuItems',
-                  icon: Icons.restaurant_menu_rounded,
-                  bgColor: const Color(0xFFEAF8EF),
-                  fgColor: const Color(0xFF299653),
-                ),
+                child: _statCard('Menu Items', '$_totalMenuItems', Icons.restaurant_menu_rounded, const Color(0xFF299653)),
               ),
             ),
           ],
@@ -322,135 +461,200 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               const Expanded(
                 child: Text('Pending Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
               ),
-              TextButton(
-                onPressed: () => SellerNavigator.orderManagement(context),
-                child: const Text('View All', style: TextStyle(fontWeight: FontWeight.w700)),
-              ),
+              _sectionAction('View All', () => SellerNavigator.orderManagement(context)),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           ...pendingOrders.map((order) => _buildPendingOrderCard(order)),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
         ],
 
-        // Recent orders (non-pending)
+        // Recent orders
         if (nonPendingOrders.isNotEmpty) ...[
-          const Text('Recent Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
-          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Expanded(
+                child: Text('Recent Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+              ),
+              _sectionAction('View All', () => SellerNavigator.orderManagement(context)),
+            ],
+          ),
+          const SizedBox(height: 14),
           ...nonPendingOrders.map((order) => _buildRecentOrderCard(order)),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
         ],
 
         // Quick actions
-        const Text('Quick Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+        const Text('Shop Management', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
         const SizedBox(height: 14),
-        ActionTile(
-          icon: Icons.edit_rounded,
-          title: 'Edit Shop Details',
-          onTap: () => SellerNavigator.shopSetup(context),
-        ),
-        ActionTile(
-          icon: Icons.restaurant_menu_rounded,
-          title: 'Manage Menu Items',
-          onTap: () => SellerNavigator.menuManagement(context),
-        ),
+        ActionTile(icon: Icons.edit_rounded, title: 'Edit Shop Details', onTap: () => SellerNavigator.shopSetup(context)),
+        ActionTile(icon: Icons.restaurant_menu_rounded, title: 'Manage Menu Items', onTap: () => SellerNavigator.menuManagement(context)),
+
         if (pendingOrders.isEmpty && _recentOrders.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(top: 40),
-            child: Center(
-              child: Icon(Icons.inbox_outlined, color: Color(0xFF7D8491), size: 48),
+          Padding(
+            padding: const EdgeInsets.only(top: 40),
+            child: EmptyState(
+              icon: Icons.inbox_outlined,
+              message: 'No orders yet',
             ),
           ),
       ],
     );
   }
 
-  Widget _buildPendingOrderCard(Map<String, dynamic> order) {
+  Widget _sectionAction(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(label, style: const TextStyle(color: _primary, fontWeight: FontWeight.w700, fontSize: 13)),
+    );
+  }
+
+  Widget _statCard(String label, String value, IconData icon, Color color) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.3)),
+        color: _cardWhite,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFF0F1F5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42, height: 42,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 14),
+          Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _ink)),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPendingOrderCard(Map<String, dynamic> order) {
+    final itemsPreview = _orderItemsPreview(order);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _cardWhite,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.notifications_active_rounded, color: Color(0xFFF59E0B), size: 18),
-              const SizedBox(width: 8),
+              Container(
+                width: 38, height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.notifications_active_rounded, color: Color(0xFFF59E0B), size: 20),
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'New Order — Rs. ${order['total'] ?? '0'}',
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: _ink),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('New Order', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: _ink)),
+                    if (itemsPreview != 'No items')
+                      Text(itemsPreview, style: const TextStyle(fontSize: 12, color: _muted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
                 ),
               ),
-              Text(
-                _timeAgo(order['created_at']),
-                style: const TextStyle(color: Color(0xFF7D8491), fontSize: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: _primary)),
+                  const SizedBox(height: 2),
+                  Text(_timeAgo(order['created_at']), style: const TextStyle(color: _muted, fontSize: 11)),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            '${order['delivery_address'] ?? 'N/A'}',
-            style: const TextStyle(color: Color(0xFF7D8491), fontSize: 13),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F9FC),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.location_on_outlined, color: _muted, size: 14),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text('${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: _muted, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+              ],
+            ),
           ),
           if (order['delivery_notes'] != null && order['delivery_notes'].toString().isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                'Note: ${order['delivery_notes']}',
-                style: const TextStyle(color: Color(0xFF9E9EAE), fontSize: 12),
-              ),
+              padding: const EdgeInsets.only(top: 8),
+              child: Text('Note: ${order['delivery_notes']}', style: const TextStyle(color: Color(0xFF9E9EAE), fontSize: 12)),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
                 child: SizedBox(
-                  height: 40,
+                  height: 42,
                   child: ElevatedButton(
                     onPressed: () => _updateOrderStatus(order['id'], 'accepted'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: SizedBox(
-                  height: 40,
+                  height: 42,
                   child: ElevatedButton(
                     onPressed: () => _updateOrderStatus(order['id'], 'cancelled'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF4444),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFFEF4444),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFFEF4444)),
+                      ),
                     ),
-                    child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                    child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
               SizedBox(
-                height: 40,
+                height: 42,
                 child: ElevatedButton(
                   onPressed: () => SellerNavigator.orderDetail(context, orderId: order['id']),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF3F4F6),
                     foregroundColor: _ink,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Details', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  child: const Text('Details', style: TextStyle(fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -464,24 +668,27 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     final status = order['status'] ?? 'delivered';
     final orderId = order['id']?.toString() ?? '';
     final shortId = orderId.length > 8 ? '#${orderId.substring(0, 8)}' : '#$orderId';
+    final color = _statusColor(status);
+
     return GestureDetector(
       onTap: () => SellerNavigator.orderDetail(context, orderId: order['id']),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: _cardWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF0F1F5)),
         ),
         child: Row(
           children: [
             Container(
-              width: 42, height: 42,
+              width: 44, height: 44,
               decoration: BoxDecoration(
-                color: _statusColor(status).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: color.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.receipt_long_rounded, color: _statusColor(status), size: 20),
+              child: Icon(Icons.receipt_long_rounded, color: color, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -492,38 +699,31 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          shortId,
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF7D8491)),
-                        ),
+                        decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(5)),
+                        child: Text(shortId, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: _muted)),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Rs. ${order['total'] ?? '0'}',
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink),
-                      ),
+                      Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink)),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    _orderItemsPreview(order),
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF7D8491)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${_statusLabel(status)} · ${_timeAgo(order['created_at'])}',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF9E9EAE)),
+                  Text(_orderItemsPreview(order), style: const TextStyle(fontSize: 12, color: _muted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(4)),
+                        child: Text(_statusLabel(status), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(_timeAgo(order['created_at']), style: const TextStyle(fontSize: 11, color: Color(0xFF9E9EAE))),
+                    ],
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFFC0C0D0), size: 18),
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFFC0C0D0), size: 20),
           ],
         ),
       ),
