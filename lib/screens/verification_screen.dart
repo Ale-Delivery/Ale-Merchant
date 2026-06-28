@@ -99,29 +99,31 @@ class _VerificationScreenState extends State<VerificationScreen> {
               Text('Enter OTP sent to ${widget.phoneNumber}', style: const TextStyle(color: textMuted, fontSize: 15)),
               const SizedBox(height: 40),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(4, (i) => SizedBox(
-                  width: 62,
-                  child: TextField(
-                    controller: _controllers[i],
-                    focusNode: _focusNodes[i],
-                    textAlign: TextAlign.center,
-                    maxLength: 1,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: darkInk),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(4, (i) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: SizedBox(
+                    width: 58,
+                    child: TextField(
+                      controller: _controllers[i],
+                      focusNode: _focusNodes[i],
+                      textAlign: TextAlign.center,
+                      maxLength: 1,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: darkInk),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                      ),
+                      onChanged: (v) {
+                        if (v.isNotEmpty && i < 3) _focusNodes[i + 1].requestFocus();
+                        if (v.isNotEmpty && i == 3) _verifyOTP();
+                      },
                     ),
-                    onChanged: (v) {
-                      if (v.isNotEmpty && i < 3) _focusNodes[i + 1].requestFocus();
-                      if (v.isNotEmpty && i == 3) _verifyOTP();
-                    },
                   ),
-                )),
-              ),
+                ))),
               const SizedBox(height: 36),
               SizedBox(
                 width: double.infinity,
