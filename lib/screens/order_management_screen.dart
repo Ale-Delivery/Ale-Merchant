@@ -1,0 +1,191 @@
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/local_storage_service.dart';
+
+class OrderManagementScreen extends StatefulWidget {
+  const OrderManagementScreen({super.key});
+
+  @override
+  State<OrderManagementScreen> createState() => _OrderManagementScreenState();
+}
+
+class _OrderManagementScreenState extends State<OrderManagementScreen> {
+  static const _primary = Color(0xFFFF6B35);
+  static const _ink = Color(0xFF1E1E2C);
+  static const _muted = Color(0xFF7D8491);
+
+  List<Map<String, dynamic>> _orders = [];
+  bool _loading = true;
+  String _filterStatus = 'pending';
+
+  final List<String> _statusOptions = ['pending', 'accepted', 'preparing', 'ready', 'delivered'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    final userId = await LocalStorageService.getUserId();
+    if (userId == null) return;
+
+    try {
+      final shop = await Supabase.instance.client.from('Restaurants').select('id').eq('owner_id', userId).maybeSingle();
+      if (shop != null) {
+        var query = Supabase.instance.client.from('Orders').select().eq('restaurant_id', shop['id']);
+        if (_filterStatus != 'all') {
+          query = query.eq('status', _filterStatus);
+        }
+        final orders = await query.order('created_at', ascending: false);
+        if (mounted) setState(() { _orders = List<Map<String, dynamic>>.from(orders); _loading = false; });
+      } else {
+        if (mounted) setState(() => _loading = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _updateStatus(String orderId, String status) async {
+    await Supabase.instance.client.from('Orders').update({'status': status}).eq('id', orderId);
+    await _loadOrders();
+  }
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'pending': return const Color(0xFFF59E0B);
+      case 'accepted': return const Color(0xFF3B82F6);
+      case 'preparing': return const Color(0xFF8B5CF6);
+      case 'ready': return const Color(0xFF10B981);
+      case 'delivered': return const Color(0xFF6B7280);
+      default: return _muted;
+    }
+  }
+
+  String _statusLabel(String status) => status[0].toUpperCase() + status.substring(1);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F8FA),
+      appBar: AppBar(
+        title: const Text('Orders', style: TextStyle(color: _ink, fontWeight: FontWeight.w800)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _ink, size: 20), onPressed: () => Navigator.pop(context)),
+      ),
+      body: Column(
+        children: [
+          // Filter tabs
+          Container(
+            height: 48,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _statusOptions.length,
+              itemBuilder: (_, i) {
+                final s = _statusOptions[i];
+                final selected = s == _filterStatus;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(_statusLabel(s), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: selected ? Colors.white : _ink)),
+                    selected: selected,
+                    onSelected: (_) { setState(() => _filterStatus = s); _loadOrders(); },
+                    selectedColor: _statusColor(s),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    side: BorderSide(color: selected ? _statusColor(s) : const Color(0xFFEDEFF3)),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Orders list
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator(color: _primary))
+                : _orders.isEmpty
+                    ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.receipt_long_rounded, color: _muted, size: 64), const SizedBox(height: 12), Text('No ${_statusLabel(_filterStatus)} orders', style: const TextStyle(color: _muted, fontSize: 16))]))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _orders.length,
+                        itemBuilder: (_, i) {
+                          final order = _orders[i];
+                          final status = order['status'] ?? 'pending';
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(children: [
+                                  Expanded(child: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: const TextStyle(fontWeight: FontWeight.w800, color: _ink))),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(color: _statusColor(status).withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                                    child: Text(_statusLabel(status), style: TextStyle(color: _statusColor(status), fontSize: 11, fontWeight: FontWeight.w700)),
+                                  ),
+                                ]),
+                                const SizedBox(height: 10),
+                                Text('Rs. ${order['total']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _primary)),
+                                const SizedBox(height: 6),
+                                Text('Address: ${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: _muted, fontSize: 12)),
+                                if (order['delivery_notes'] != null && order['delivery_notes'].toString().isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text('Notes: ${order['delivery_notes']}', style: const TextStyle(color: _muted, fontSize: 12)),
+                                ],
+                                const SizedBox(height: 12),
+                                if (status == 'pending')
+                                  Row(children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () => _updateStatus(order['id'], 'accepted'),
+                                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                                        child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.w700)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () => _updateStatus(order['id'], 'delivered'),
+                                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                                        child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w700)),
+                                      ),
+                                    ),
+                                  ])
+                                else if (status == 'accepted')
+                                  ElevatedButton.icon(
+                                    onPressed: () => _updateStatus(order['id'], 'preparing'),
+                                    icon: const Icon(Icons.thumb_up, size: 16),
+                                    label: const Text('Start Preparing'),
+                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF8B5CF6), foregroundColor: Colors.white),
+                                  )
+                                else if (status == 'preparing')
+                                  ElevatedButton.icon(
+                                    onPressed: () => _updateStatus(order['id'], 'ready'),
+                                    icon: const Icon(Icons.check_circle_outline, size: 16),
+                                    label: const Text('Mark Ready'),
+                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white),
+                                  )
+                                else if (status == 'ready')
+                                  ElevatedButton.icon(
+                                    onPressed: () => _updateStatus(order['id'], 'delivered'),
+                                    icon: const Icon(Icons.delivery_dining, size: 16),
+                                    label: const Text('Mark Delivered'),
+                                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6B7280), foregroundColor: Colors.white),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+}

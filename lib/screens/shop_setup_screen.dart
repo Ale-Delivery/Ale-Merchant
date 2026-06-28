@@ -1,0 +1,248 @@
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/local_storage_service.dart';
+import '../navigation/seller_navigator.dart';
+
+class ShopSetupScreen extends StatefulWidget {
+  const ShopSetupScreen({super.key});
+
+  @override
+  State<ShopSetupScreen> createState() => _ShopSetupScreenState();
+}
+
+class _ShopSetupScreenState extends State<ShopSetupScreen> {
+  static const _primary = Color(0xFFFF6B35);
+  static const _ink = Color(0xFF1E1E2C);
+
+  final _nameController = TextEditingController();
+  final _tagsController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _imageUrlController = TextEditingController();
+  String _selectedCategory = 'Burger';
+  String _deliveryFee = 'Free';
+  String _deliveryTime = '25 min';
+  int _deliveryMin = 25;
+  bool _freeDelivery = true;
+  bool _isLoading = false;
+  bool _editMode = false;
+
+  final List<String> _categories = ['Burger', 'Pizza', 'Sandwich', 'Coffee', 'Bowl', 'Sides', 'Sri Lankan', 'Chinese'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExistingShop();
+  }
+
+  Future<void> _loadExistingShop() async {
+    final userId = await LocalStorageService.getUserId();
+    if (userId == null) return;
+
+    try {
+      final shop = await Supabase.instance.client.from('Restaurants').select().eq('owner_id', userId).maybeSingle();
+      if (shop != null && mounted) {
+        setState(() {
+          _editMode = true;
+          _nameController.text = shop['name'] ?? '';
+          _tagsController.text = shop['tags'] ?? '';
+          _addressController.text = shop['address'] ?? '';
+          _descriptionController.text = shop['description'] ?? '';
+          _imageUrlController.text = shop['image_url'] ?? '';
+          _selectedCategory = shop['category'] ?? 'Burger';
+          _deliveryFee = shop['delivery_fee']?.toString() ?? 'Free';
+          _deliveryTime = shop['delivery_time']?.toString() ?? '25 min';
+          _deliveryMin = shop['delivery_min'] ?? 25;
+          _freeDelivery = shop['free_delivery'] ?? true;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveShop() async {
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter shop name'), behavior: SnackBarBehavior.floating));
+      return;
+    }
+
+    final userId = await LocalStorageService.getUserId();
+    if (userId == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final shopId = 'rest-${DateTime.now().millisecondsSinceEpoch}';
+
+      final payload = {
+        'id': shopId,
+        'name': _nameController.text.trim(),
+        'image_url': _imageUrlController.text.trim().isEmpty ? 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600' : _imageUrlController.text.trim(),
+        'rating': 4.5,
+        'delivery_fee': _deliveryFee,
+        'delivery_time': _deliveryTime,
+        'delivery_min': _deliveryMin,
+        'free_delivery': _freeDelivery,
+        'category': _selectedCategory,
+        'tags': _tagsController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'address': _addressController.text.trim(),
+        'owner_id': userId,
+      };
+
+      await Supabase.instance.client.from('Restaurants').upsert(payload);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Shop saved!'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating));
+        SellerNavigator.home(context, clearStack: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _tagsController.dispose();
+    _addressController.dispose();
+    _descriptionController.dispose();
+    _imageUrlController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F8FA),
+      appBar: AppBar(
+        title: Text(_editMode ? 'Edit Shop' : 'Create Shop', style: const TextStyle(color: _ink, fontWeight: FontWeight.w800)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _ink, size: 20), onPressed: () => Navigator.pop(context)),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSection('Basic Info'),
+            _buildField('Shop Name', _nameController, 'e.g. Pizza Palace'),
+            const SizedBox(height: 16),
+            _buildField('Image URL', _imageUrlController, 'e.g. https://images.unsplash.com/...', required: false),
+            const SizedBox(height: 16),
+            _buildDropdown('Category', _selectedCategory, _categories, (v) => setState(() => _selectedCategory = v!)),
+            const SizedBox(height: 16),
+            _buildField('Tags', _tagsController, 'e.g. Pizza · Italian · Family', required: false),
+            const SizedBox(height: 16),
+            _buildField('Address', _addressController, 'e.g. Colombo 03'),
+            const SizedBox(height: 16),
+            _buildField('Description', _descriptionController, 'Short description of your restaurant', maxLines: 3, required: false),
+            const SizedBox(height: 28),
+
+            _buildSection('Delivery Settings'),
+            Row(
+              children: [
+                Expanded(child: _buildField('Delivery Fee', TextEditingController(text: _deliveryFee), 'Free or Rs. 150', onChanged: (v) => _deliveryFee = v.isEmpty ? 'Free' : v)),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Free Delivery', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1)),
+                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        value: _freeDelivery,
+                        onChanged: (v) => setState(() => _freeDelivery = v),
+                        title: Text(_freeDelivery ? 'Yes' : 'No', style: const TextStyle(fontWeight: FontWeight.w600)),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: _buildField('Delivery Time', TextEditingController(text: _deliveryTime), 'e.g. 30 min', onChanged: (v) => _deliveryTime = v)),
+                const SizedBox(width: 14),
+                Expanded(child: _buildField('Delivery Min', TextEditingController(text: '$_deliveryMin'), 'e.g. 25', keyboard: TextInputType.number, onChanged: (v) => _deliveryMin = int.tryParse(v) ?? _deliveryMin)),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _saveShop,
+                style: ElevatedButton.styleFrom(backgroundColor: _primary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                child: _isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : Text(_editMode ? 'Update Shop' : 'Create Shop', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+    );
+  }
+
+  Widget _buildField(String label, TextEditingController controller, String hint, {int maxLines = 1, bool required = true, TextInputType keyboard = TextInputType.text, ValueChanged<String>? onChanged}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('${label.toUpperCase()}${required ? ' *' : ''}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: keyboard,
+          onChanged: onChanged,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Color(0xFFC0C0D0), fontSize: 14),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _primary, width: 1.5)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1)),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              isExpanded: true,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink),
+              items: items.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
