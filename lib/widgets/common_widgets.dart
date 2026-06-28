@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 /// Reusable stat card for dashboard overviews.
 class StatCard extends StatelessWidget {
@@ -22,8 +23,9 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,9 +39,9 @@ class StatCard extends StatelessWidget {
             child: Icon(icon, color: fgColor, size: 20),
           ),
           const SizedBox(height: 14),
-          Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Color(0xFF1E1E2C))),
+          Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink)),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Color(0xFF7D8491), fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -63,14 +65,14 @@ class ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = iconColor ?? const Color(0xFFFF6B35);
+    final color = iconColor ?? AppColors.orange;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -81,10 +83,10 @@ class ActionTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E1E2C)),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: Color(0xFF7D8491)),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
               ],
             ),
           ),
@@ -155,7 +157,7 @@ class SellerTextField extends StatelessWidget {
       children: [
         Text(
           '${label.toUpperCase()}${required ? ' *' : ''}',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -163,19 +165,19 @@ class SellerTextField extends StatelessWidget {
           maxLines: maxLines,
           keyboardType: keyboard,
           onChanged: onChanged,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E1E2C)),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: Color(0xFFC0C0D0), fontSize: 14),
+            hintStyle: const TextStyle(color: AppColors.hint, fontSize: 14),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFFF6B35), width: 1.5),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(14)),
+              borderSide: BorderSide(color: AppColors.orange, width: 1.5),
             ),
           ),
         ),
@@ -205,12 +207,12 @@ class SellerButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFF6B35),
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: AppColors.orange,
+          foregroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: isLoading
-            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
             : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
       ),
     );
@@ -238,9 +240,9 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: const Color(0xFF7D8491), size: 64),
+          Icon(icon, color: AppColors.muted, size: 64),
           const SizedBox(height: 12),
-          Text(message, style: const TextStyle(color: Color(0xFF7D8491), fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(message, style: const TextStyle(color: AppColors.muted, fontSize: 16, fontWeight: FontWeight.w600)),
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: 18),
             ElevatedButton.icon(
@@ -248,9 +250,9 @@ class EmptyState extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: Text(actionLabel!),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6B35),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                backgroundColor: AppColors.orange,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
             ),
           ],

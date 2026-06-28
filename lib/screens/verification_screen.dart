@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/local_storage_service.dart';
 import '../services/auth_service.dart';
 import '../navigation/seller_navigator.dart';
+import '../theme/app_theme.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -32,7 +33,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       return;
     }
     if (enteredOtp != widget.expectedOtp) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid OTP Code!'), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid OTP Code!'), backgroundColor: AppColors.red, behavior: SnackBarBehavior.floating));
       return;
     }
 
@@ -67,7 +68,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.red, behavior: SnackBarBehavior.floating));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -76,13 +77,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFFFF6B35);
-    const darkInk = Color(0xFF1E1E2C);
-    const lightBg = Color(0xFFF9FAFC);
-    const textMuted = Color(0xFF7D8491);
-
     return Scaffold(
-      backgroundColor: lightBg,
+      backgroundColor: AppColors.bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
@@ -90,13 +86,17 @@ class _VerificationScreenState extends State<VerificationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4))]),
-                child: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: darkInk, size: 18), onPressed: () => Navigator.pop(context)),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 4))],
+                ),
+                child: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 18), onPressed: () => Navigator.pop(context)),
               ),
               const SizedBox(height: 32),
-              const Text('Verification', style: TextStyle(color: darkInk, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.8)),
+              const Text('Verification', style: TextStyle(color: AppColors.ink, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.8)),
               const SizedBox(height: 8),
-              Text('Enter OTP sent to ${widget.phoneNumber}', style: const TextStyle(color: textMuted, fontSize: 15)),
+              Text('Enter OTP sent to ${widget.phoneNumber}', style: const TextStyle(color: AppColors.muted, fontSize: 15)),
               const SizedBox(height: 40),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -110,12 +110,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       textAlign: TextAlign.center,
                       maxLength: 1,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: darkInk),
+                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.ink),
                       decoration: InputDecoration(
                         counterText: '',
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppColors.white,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(14)),
+                          borderSide: BorderSide(color: AppColors.orange, width: 2.0),
+                        ),
                       ),
                       onChanged: (v) {
                         if (v.isNotEmpty && i < 3) _focusNodes[i + 1].requestFocus();
@@ -130,8 +134,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 height: 54,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _verifyOTP,
-                  style: ElevatedButton.styleFrom(backgroundColor: primaryColor, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                  child: _isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Verify OTP', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.orange, foregroundColor: AppColors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                  child: _isLoading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)) : const Text('Verify OTP', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                 ),
               ),
             ],

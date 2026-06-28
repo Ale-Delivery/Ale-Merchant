@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../widgets/common_widgets.dart';
+import '../theme/app_theme.dart';
 
 class ShopSetupScreen extends StatefulWidget {
   const ShopSetupScreen({super.key});
@@ -12,7 +13,6 @@ class ShopSetupScreen extends StatefulWidget {
 }
 
 class _ShopSetupScreenState extends State<ShopSetupScreen> {
-  static const _ink = Color(0xFF1E1E2C);
 
   final _nameController = TextEditingController();
   final _tagsController = TextEditingController();
@@ -110,14 +110,14 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Shop saved!'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),
+          SnackBar(content: const Text('Shop saved!'), backgroundColor: AppColors.green, behavior: SnackBarBehavior.floating),
         );
         SellerNavigator.home(context, clearStack: true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.red, behavior: SnackBarBehavior.floating),
         );
       }
     } finally {
@@ -141,13 +141,13 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: Text(_editMode ? 'Edit Shop' : 'Create Shop', style: const TextStyle(color: _ink, fontWeight: FontWeight.w800)),
+        title: Text(_editMode ? 'Edit Shop' : 'Create Shop', style: const TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _ink, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -186,7 +186,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Free Delivery', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1)),
+                      const Text('Free Delivery', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1)),
                       const SizedBox(height: 8),
                       SwitchListTile(
                         value: _freeDelivery,
@@ -231,7 +231,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Shop Open', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1)),
+                      const Text('Shop Open', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1)),
                       const SizedBox(height: 8),
                       SwitchListTile(
                         value: _isOpen,
@@ -261,7 +261,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
   Widget _sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+      child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
     );
   }
 
@@ -269,7 +269,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1)),
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -278,7 +278,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
               items: items.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
               onChanged: onChanged,
             ),

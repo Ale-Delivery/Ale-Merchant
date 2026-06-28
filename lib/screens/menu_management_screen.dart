@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
 import '../widgets/common_widgets.dart';
+import '../theme/app_theme.dart';
 
 class MenuManagementScreen extends StatefulWidget {
   const MenuManagementScreen({super.key});
@@ -11,9 +12,6 @@ class MenuManagementScreen extends StatefulWidget {
 }
 
 class _MenuManagementScreenState extends State<MenuManagementScreen> {
-  static const _primary = Color(0xFFFF6B35);
-  static const _ink = Color(0xFF1E1E2C);
-  static const _muted = Color(0xFF7D8491);
 
   List<Map<String, dynamic>> _items = [];
   bool _loading = true;
@@ -82,7 +80,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: _muted))),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: AppColors.muted))),
           ElevatedButton(
             onPressed: () {
               if (nameCtrl.text.trim().isEmpty || priceCtrl.text.trim().isEmpty) return;
@@ -96,7 +94,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                 'ingredients': ingredients.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList(),
               });
             },
-            style: ElevatedButton.styleFrom(backgroundColor: _primary, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.orange, foregroundColor: Colors.white),
             child: const Text('Save'),
           ),
         ],
@@ -127,11 +125,11 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
 
         await _loadItems();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item saved!'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Item saved!'), backgroundColor: AppColors.green, behavior: SnackBarBehavior.floating));
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.red, behavior: SnackBarBehavior.floating));
         }
       }
     }
@@ -150,20 +148,20 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text('Menu Items', style: TextStyle(color: _ink, fontWeight: FontWeight.w800)),
+        title: const Text('Menu Items', style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _ink, size: 20), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20), onPressed: () => Navigator.pop(context)),
       ),
       floatingActionButton: _shopId != null ? FloatingActionButton(
         onPressed: () => _showAddEditDialog(),
-        backgroundColor: _primary,
+        backgroundColor: AppColors.orange,
         child: const Icon(Icons.add_rounded, color: Colors.white),
       ) : null,
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _primary))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.orange))
           : _items.isEmpty
               ? EmptyState(
                   icon: Icons.restaurant_menu_rounded,
@@ -191,11 +189,11 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                               Text(item['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                               const SizedBox(height: 4),
-                              Text('Rs. ${item['price']}', style: const TextStyle(color: _primary, fontWeight: FontWeight.w800, fontSize: 16)),
+                              Text('Rs. ${item['price']}', style: const TextStyle(color: AppColors.orange, fontWeight: FontWeight.w800, fontSize: 16)),
                             ]),
                           ),
-                          IconButton(icon: const Icon(Icons.edit_rounded, color: _muted, size: 20), onPressed: () => _showAddEditDialog(item: item)),
-                          IconButton(icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20), onPressed: () => _deleteItem(item['id'])),
+                          IconButton(icon: const Icon(Icons.edit_rounded, color: AppColors.muted, size: 20), onPressed: () => _showAddEditDialog(item: item)),
+                          IconButton(icon: const Icon(Icons.delete_outline_rounded, color: AppColors.red, size: 20), onPressed: () => _deleteItem(item['id'])),
                         ],
                       ),
                     );

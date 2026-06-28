@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
+import '../theme/app_theme.dart';
 import '../navigation/seller_navigator.dart';
 import '../widgets/common_widgets.dart';
 
@@ -13,11 +14,6 @@ class SellerHomeScreen extends StatefulWidget {
 }
 
 class _SellerHomeScreenState extends State<SellerHomeScreen> {
-  static const _primary = Color(0xFFFF6B35);
-  static const _ink = Color(0xFF1E1E2C);
-  static const _muted = Color(0xFF7D8491);
-  static const _surface = Color(0xFFF5F6FA);
-  static const _cardWhite = Color(0xFFFFFFFF);
 
   Map<String, dynamic>? _shop;
   int _pendingOrders = 0;
@@ -249,19 +245,19 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   Color _statusColor(String status) {
     switch (status) {
       case 'pending':
-        return const Color(0xFFF59E0B);
+        return AppColors.amber;
       case 'accepted':
-        return const Color(0xFF3B82F6);
+        return AppColors.blue;
       case 'preparing':
-        return const Color(0xFF8B5CF6);
+        return AppColors.purple;
       case 'ready':
-        return const Color(0xFF10B981);
+        return AppColors.green;
       case 'delivered':
-        return const Color(0xFF6B7280);
+        return AppColors.muted;
       case 'cancelled':
-        return const Color(0xFFEF4444);
+        return AppColors.red;
       default:
-        return _muted;
+        return AppColors.muted;
     }
   }
 
@@ -281,18 +277,18 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        backgroundColor: _surface,
-        body: const Center(child: CircularProgressIndicator(color: _primary)),
+        backgroundColor: AppColors.bg,
+        body: const Center(child: CircularProgressIndicator(color: AppColors.orange)),
       );
     }
 
     return Scaffold(
-      backgroundColor: _surface,
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Alee Seller', style: TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 20)),
+            const Text('Alee Seller', style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800, fontSize: 20)),
             if (_pendingOrders > 0) ...[
               const SizedBox(width: 8),
               _pendingBadge(_pendingOrders),
@@ -303,11 +299,11 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outline_rounded, color: _muted),
+            icon: const Icon(Icons.person_outline_rounded, color: AppColors.muted),
             onPressed: () => SellerNavigator.profile(context),
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: _muted),
+            icon: const Icon(Icons.logout, color: AppColors.muted),
             onPressed: () async {
               await LocalStorageService.clearSession();
               if (mounted) SellerNavigator.phoneAuth(context);
@@ -319,7 +315,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           ? _buildNoShop()
           : RefreshIndicator(
               onRefresh: _loadDashboard,
-              color: _primary,
+              color: AppColors.orange,
               child: _buildDashboard(),
             ),
     );
@@ -329,12 +325,10 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF6B35), Color(0xFFFF8C61)],
-        ),
+        gradient: AppGradients.primary,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
-          BoxShadow(color: _primary.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(color: AppColors.orange.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       child: Text(
@@ -355,18 +349,18 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               width: 96, height: 96,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFFF3EE), Color(0xFFFFE0D0)],
+                  colors: [AppColors.orangeLight, Color(0xFFFFE0D0)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
               ),
-              child: const Icon(Icons.store_rounded, color: _primary, size: 44),
+              child: const Icon(Icons.store_rounded, color: AppColors.orange, size: 44),
             ),
             const SizedBox(height: 28),
-            const Text('Welcome to Alee Seller', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: _ink, letterSpacing: -0.5)),
+            const Text('Welcome to Alee Seller', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.ink, letterSpacing: -0.5)),
             const SizedBox(height: 10),
-            const Text('Create your restaurant and start receiving orders', textAlign: TextAlign.center, style: TextStyle(color: _muted, fontSize: 15, height: 1.5)),
+            const Text('Create your restaurant and start receiving orders', textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted, fontSize: 15, height: 1.5)),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -376,7 +370,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 icon: const Icon(Icons.add_rounded, size: 22),
                 label: const Text('Create Shop', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _primary,
+                  backgroundColor: AppColors.orange,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -401,11 +395,11 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         // Revenue stats
         Row(
           children: [
-            Expanded(child: _revenueCard('Today Revenue', 'Rs. ${_todayRevenue.toStringAsFixed(0)}', Icons.attach_money_rounded, const Color(0xFF10B981))),
+            Expanded(child: _revenueCard('Today Revenue', 'Rs. ${_todayRevenue.toStringAsFixed(0)}', Icons.attach_money_rounded, AppColors.green)),
             const SizedBox(width: 10),
-            Expanded(child: _revenueCard('Today Orders', '$_todayOrders', Icons.shopping_bag_rounded, const Color(0xFF3B82F6))),
+            Expanded(child: _revenueCard('Today Orders', '$_todayOrders', Icons.shopping_bag_rounded, AppColors.blue)),
             const SizedBox(width: 10),
-            Expanded(child: _revenueCard('Week Revenue', 'Rs. ${_weekRevenue.toStringAsFixed(0)}', Icons.trending_up_rounded, const Color(0xFF8B5CF6))),
+            Expanded(child: _revenueCard('Week Revenue', 'Rs. ${_weekRevenue.toStringAsFixed(0)}', Icons.trending_up_rounded, AppColors.purple)),
           ],
         ),
         const SizedBox(height: 20),
@@ -414,14 +408,10 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         Container(
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1A1A2E), Color(0xFF2D2D44)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            gradient: AppGradients.dark,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
-              BoxShadow(color: const Color(0xFF1A1A2E).withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 8)),
+              BoxShadow(color: AppColors.darkBg.withOpacity(0.25), blurRadius: 20, offset: const Offset(0, 8)),
             ],
           ),
           child: Column(
@@ -452,7 +442,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Icon(Icons.circle, color: _primary, size: 6),
+                            Icon(Icons.circle, color: AppColors.orange, size: 6),
                             const SizedBox(width: 8),
                             Text(
                               shop['address'] ?? '',
@@ -466,10 +456,10 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                   Container(
                     width: 48, height: 48,
                     decoration: BoxDecoration(
-                      color: _primary.withOpacity(0.15),
+                      color: AppColors.orange.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.check_circle_rounded, color: _primary, size: 24),
+                    child: const Icon(Icons.check_circle_rounded, color: AppColors.orange, size: 24),
                   ),
                 ],
               ),
@@ -494,14 +484,14 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             Expanded(
               child: GestureDetector(
                 onTap: () => SellerNavigator.orderManagement(context),
-                child: _statCard('Pending', '$_pendingOrders', Icons.receipt_long_rounded, _primary),
+                child: _statCard('Pending', '$_pendingOrders', Icons.receipt_long_rounded, AppColors.orange),
               ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: GestureDetector(
                 onTap: () => SellerNavigator.menuManagement(context),
-                child: _statCard('Menu Items', '$_totalMenuItems', Icons.restaurant_menu_rounded, const Color(0xFF299653)),
+                child: _statCard('Menu Items', '$_totalMenuItems', Icons.restaurant_menu_rounded, AppColors.green),
               ),
             ),
           ],
@@ -513,7 +503,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           Row(
             children: [
               const Expanded(
-                child: Text('Pending Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+                child: Text('Pending Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
               ),
               _sectionAction('View All', () => SellerNavigator.orderManagement(context)),
             ],
@@ -528,7 +518,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           Row(
             children: [
               const Expanded(
-                child: Text('Recent Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+                child: Text('Recent Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
               ),
               _sectionAction('View All', () => SellerNavigator.orderManagement(context)),
             ],
@@ -539,7 +529,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         ],
 
         // Quick actions
-        const Text('Shop Management', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+        const Text('Shop Management', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
         const SizedBox(height: 14),
         ActionTile(icon: Icons.edit_rounded, title: 'Edit Shop Details', onTap: () => SellerNavigator.shopSetup(context)),
         ActionTile(icon: Icons.restaurant_menu_rounded, title: 'Manage Menu Items', onTap: () => SellerNavigator.menuManagement(context)),
@@ -550,13 +540,13 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           Row(
             children: [
               const Expanded(
-                child: Text('Customer Reviews', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+                child: Text('Customer Reviews', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
               ),
               Row(
                 children: [
                   const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 18),
                   const SizedBox(width: 4),
-                  Text(_avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _ink)),
+                  Text(_avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.ink)),
                 ],
               ),
             ],
@@ -580,7 +570,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   Widget _sectionAction(String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Text(label, style: const TextStyle(color: _primary, fontWeight: FontWeight.w700, fontSize: 13)),
+      child: Text(label, style: const TextStyle(color: AppColors.orange, fontWeight: FontWeight.w700, fontSize: 13)),
     );
   }
 
@@ -588,9 +578,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _cardWhite,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF0F1F5)),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,9 +594,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(height: 14),
-          Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _ink)),
+          Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink)),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -618,7 +608,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _cardWhite,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.2)),
         boxShadow: [
@@ -643,18 +633,18 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('New Order', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: _ink)),
+                    Text('New Order', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.ink)),
                     if (itemsPreview != 'No items')
-                      Text(itemsPreview, style: const TextStyle(fontSize: 12, color: _muted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(itemsPreview, style: const TextStyle(fontSize: 12, color: AppColors.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: _primary)),
+                  Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.orange)),
                   const SizedBox(height: 2),
-                  Text(_timeAgo(order['created_at']), style: const TextStyle(color: _muted, fontSize: 11)),
+                  Text(_timeAgo(order['created_at']), style: const TextStyle(color: AppColors.muted, fontSize: 11)),
                 ],
               ),
             ],
@@ -663,15 +653,15 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FC),
+              color: AppColors.bg,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                const Icon(Icons.location_on_outlined, color: _muted, size: 14),
+                const Icon(Icons.location_on_outlined, color: AppColors.muted, size: 14),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Text('${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: _muted, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: Text('${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: AppColors.muted, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ],
             ),
@@ -679,7 +669,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           if (order['delivery_notes'] != null && order['delivery_notes'].toString().isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('Note: ${order['delivery_notes']}', style: const TextStyle(color: Color(0xFF9E9EAE), fontSize: 12)),
+              child: Text('Note: ${order['delivery_notes']}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
             ),
           const SizedBox(height: 14),
           Row(
@@ -690,7 +680,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                   child: ElevatedButton(
                     onPressed: () => _updateOrderStatus(order['id'], 'accepted'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
+                      backgroundColor: AppColors.green,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -707,11 +697,11 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                     onPressed: () => _updateOrderStatus(order['id'], 'cancelled'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFFEF4444),
+                      foregroundColor: AppColors.red,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Color(0xFFEF4444)),
+                        side: const BorderSide(color: AppColors.red),
                       ),
                     ),
                     child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.w700)),
@@ -724,8 +714,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 child: ElevatedButton(
                   onPressed: () => SellerNavigator.orderDetail(context, orderId: order['id']),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF3F4F6),
-                    foregroundColor: _ink,
+                    backgroundColor: AppColors.divider,
+                    foregroundColor: AppColors.ink,
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -751,9 +741,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _cardWhite,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF0F1F5)),
+          border: Border.all(color: AppColors.divider),
         ),
         child: Row(
           children: [
@@ -774,15 +764,15 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(5)),
-                        child: Text(shortId, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: _muted)),
+                        decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(5)),
+                        child: Text(shortId, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.muted)),
                       ),
                       const SizedBox(width: 8),
-                      Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink)),
+                      Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(_orderItemsPreview(order), style: const TextStyle(fontSize: 12, color: _muted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(_orderItemsPreview(order), style: const TextStyle(fontSize: 12, color: AppColors.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 3),
                   Row(
                     children: [
@@ -798,7 +788,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFFC0C0D0), size: 20),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.muted, size: 20),
           ],
         ),
       ),
@@ -809,9 +799,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
       decoration: BoxDecoration(
-        color: _cardWhite,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF0F1F5)),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         children: [
@@ -824,9 +814,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             child: Icon(icon, color: color, size: 16),
           ),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: _muted, fontSize: 10, fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 10, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -841,9 +831,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _cardWhite,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFF0F1F5)),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -856,12 +846,12 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 size: 16,
               )),
               const SizedBox(width: 8),
-              Text(_timeAgo(createdAt), style: const TextStyle(fontSize: 11, color: Color(0xFF9E9EAE))),
+              Text(_timeAgo(createdAt), style: const TextStyle(fontSize: 11, color: AppColors.muted)),
             ],
           ),
           if (comment.toString().isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(comment.toString(), style: const TextStyle(fontSize: 13, color: _ink, height: 1.4)),
+            Text(comment.toString(), style: const TextStyle(fontSize: 13, color: AppColors.ink, height: 1.4)),
           ],
         ],
       ),

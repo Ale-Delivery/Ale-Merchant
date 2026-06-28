@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../theme/app_theme.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -11,10 +12,6 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-  static const _primary = Color(0xFFFF6B35);
-  static const _ink = Color(0xFF1E1E2C);
-  static const _muted = Color(0xFF7D8491);
-  static const _surface = Color(0xFFF5F6FA);
 
   Map<String, dynamic>? _order;
   List<Map<String, dynamic>> _items = [];
@@ -70,13 +67,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'pending': return const Color(0xFFF59E0B);
-      case 'accepted': return const Color(0xFF3B82F6);
-      case 'preparing': return const Color(0xFF8B5CF6);
-      case 'ready': return const Color(0xFF10B981);
-      case 'delivered': return const Color(0xFF6B7280);
-      case 'cancelled': return const Color(0xFFEF4444);
-      default: return _muted;
+      case 'pending': return AppColors.amber;
+      case 'accepted': return AppColors.blue;
+      case 'preparing': return AppColors.purple;
+      case 'ready': return AppColors.green;
+      case 'delivered': return AppColors.muted;
+      case 'cancelled': return AppColors.red;
+      default: return AppColors.muted;
     }
   }
 
@@ -86,23 +83,23 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        backgroundColor: _surface,
-        body: const Center(child: CircularProgressIndicator(color: _primary)),
+        backgroundColor: AppColors.bg,
+        body: const Center(child: CircularProgressIndicator(color: AppColors.orange)),
       );
     }
 
     if (_error != null) {
       return Scaffold(
-        backgroundColor: _surface,
+        backgroundColor: AppColors.bg,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
         body: Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.error_outline, color: _muted, size: 48),
+            const Icon(Icons.error_outline, color: AppColors.muted, size: 48),
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: _muted)),
+            Text(_error!, style: const TextStyle(color: AppColors.muted)),
           ]),
         ),
       );
@@ -113,13 +110,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final statusColor = _statusColor(status);
 
     return Scaffold(
-      backgroundColor: _surface,
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: const TextStyle(color: _ink, fontWeight: FontWeight.w800, fontSize: 18)),
+        title: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: const TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800, fontSize: 18)),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _ink, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20),
           onPressed: () => Navigator.pop(context, true),
         ),
       ),
@@ -190,10 +187,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
                         width: 52, height: 52,
-                        color: const Color(0xFFF3F4F6),
+                        color: AppColors.divider,
                         child: image.isNotEmpty
-                            ? Image.network(image, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.fastfood, color: _muted, size: 22))
-                            : const Icon(Icons.fastfood, color: _muted, size: 22),
+                            ? Image.network(image, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.fastfood, color: AppColors.muted, size: 22))
+                            : const Icon(Icons.fastfood, color: AppColors.muted, size: 22),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -201,21 +198,21 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink)),
+                          Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
                           const SizedBox(height: 2),
                           Text(
                             '${size != null ? '$size · ' : ''}${qty}x',
-                            style: const TextStyle(fontSize: 12, color: _muted),
+                            style: const TextStyle(fontSize: 12, color: AppColors.muted),
                           ),
                         ],
                       ),
                     ),
-                    Text('Rs. ${(price * (qty is int ? qty : 1)).toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink)),
+                    Text('Rs. ${(price * (qty is int ? qty : 1)).toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
                   ],
                 ),
               );
             }),
-            const Divider(height: 20, color: Color(0xFFF0F1F5)),
+            const Divider(height: 20, color: AppColors.border),
             _priceRow('Subtotal', 'Rs. ${(order['subtotal'] ?? 0).toString()}'),
             const SizedBox(height: 8),
             _priceRow('Delivery Fee', 'Rs. ${(order['delivery_fee'] ?? 0).toString()}'),
@@ -227,15 +224,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           // Action buttons
           if (status == 'pending')
             _actionRow([
-              _actionBtn('Accept', Icons.check_circle_outline, const Color(0xFF10B981), () => _updateStatus('accepted')),
-              _actionBtn('Reject', Icons.cancel_outlined, const Color(0xFFEF4444), () => _updateStatus('cancelled'), outlined: true),
+              _actionBtn('Accept', Icons.check_circle_outline, AppColors.green, () => _updateStatus('accepted')),
+              _actionBtn('Reject', Icons.cancel_outlined, AppColors.red, () => _updateStatus('cancelled'), outlined: true),
             ])
           else if (status == 'accepted')
-            _actionBtn('Start Preparing', Icons.restaurant_rounded, const Color(0xFF8B5CF6), () => _updateStatus('preparing'))
+            _actionBtn('Start Preparing', Icons.restaurant_rounded, AppColors.purple, () => _updateStatus('preparing'))
           else if (status == 'preparing')
-            _actionBtn('Mark Ready', Icons.check_circle_outline, const Color(0xFF10B981), () => _updateStatus('ready'))
+            _actionBtn('Mark Ready', Icons.check_circle_outline, AppColors.green, () => _updateStatus('ready'))
           else if (status == 'ready')
-            _actionBtn('Mark Delivered', Icons.delivery_dining, const Color(0xFF6B7280), () => _updateStatus('delivered')),
+            _actionBtn('Mark Delivered', Icons.delivery_dining, AppColors.muted, () => _updateStatus('delivered')),
         ],
       ),
     );
@@ -271,12 +268,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF0F1F5)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink)),
           const SizedBox(height: 14),
           ...children,
         ],
@@ -292,17 +289,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xFFF5F6FA), borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, color: _muted, size: 16),
+            decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, color: AppColors.muted, size: 16),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _muted)),
+                Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.muted)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _ink)),
+                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
               ],
             ),
           ),
@@ -315,8 +312,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: bold ? _ink : _muted)),
-        Text(value, style: TextStyle(fontSize: 14, fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: _ink)),
+        Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: bold ? AppColors.ink : AppColors.muted)),
+        Text(value, style: TextStyle(fontSize: 14, fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: AppColors.ink)),
       ],
     );
   }

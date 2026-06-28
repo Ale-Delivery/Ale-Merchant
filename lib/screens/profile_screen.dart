@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
 import '../services/auth_service.dart';
 import '../navigation/seller_navigator.dart';
+import '../theme/app_theme.dart';
 
 class SellerProfileScreen extends StatefulWidget {
   const SellerProfileScreen({super.key});
@@ -12,9 +13,6 @@ class SellerProfileScreen extends StatefulWidget {
 }
 
 class _SellerProfileScreenState extends State<SellerProfileScreen> {
-  static const _primary = Color(0xFFFF6B35);
-  static const _ink = Color(0xFF1E1E2C);
-  static const _muted = Color(0xFF7D8491);
 
   String? _name;
   String? _phone;
@@ -85,11 +83,11 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: _muted, fontWeight: FontWeight.bold)),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Log out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: const Text('Log out', style: TextStyle(color: AppColors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -104,18 +102,18 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text('My Profile', style: TextStyle(color: _ink, fontWeight: FontWeight.w800)),
+        title: const Text('My Profile', style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800)),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _ink, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: _primary))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.orange))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -123,11 +121,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1E1E2C), Color(0xFF2E2E44)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    gradient: AppGradients.dark,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Row(
@@ -137,9 +131,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                         height: 72,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF8C61), Color(0xFFFF6B35)],
-                          ),
+                          gradient: AppGradients.avatar,
                           border: Border.all(color: Colors.white.withOpacity(0.2), width: 3),
                         ),
                         child: Center(
@@ -215,10 +207,10 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                   height: 52,
                   child: TextButton.icon(
                     onPressed: _logout,
-                    icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
-                    label: const Text('Log out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w800, fontSize: 16)),
+                    icon: const Icon(Icons.logout_rounded, color: AppColors.red, size: 20),
+                    label: const Text('Log out', style: TextStyle(color: AppColors.red, fontWeight: FontWeight.w800, fontSize: 16)),
                     style: TextButton.styleFrom(
-                      backgroundColor: Colors.red.withOpacity(0.06),
+                      backgroundColor: AppColors.red.withOpacity(0.06),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
@@ -230,7 +222,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   }
 
   Widget _sectionHeader(String title) {
-    return Text(title.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1.5));
+    return Text(title.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1.5));
   }
 
   Widget _infoRow(IconData icon, String label, String value) {
@@ -240,17 +232,17 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xFFF3F4F6), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: _muted, size: 18),
+            decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: AppColors.muted, size: 18),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF9D9DAF), fontWeight: FontWeight.bold)),
+                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 3),
-                Text(value, style: const TextStyle(fontSize: 14, color: _ink, fontWeight: FontWeight.w700)),
+                Text(value, style: const TextStyle(fontSize: 14, color: AppColors.ink, fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -275,14 +267,14 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(color: _primary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Icon(icon, color: _primary, size: 22),
+                  decoration: BoxDecoration(color: AppColors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(icon, color: AppColors.orange, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _ink)),
+                  child: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink)),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: _muted),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
               ],
             ),
           ),

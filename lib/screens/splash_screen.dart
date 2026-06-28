@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
+import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -48,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E2C),
+      backgroundColor: AppColors.darkCard,
       body: Center(
         child: FadeTransition(
           opacity: _fade,
@@ -59,16 +60,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B35),
+                  color: AppColors.orange,
                   borderRadius: BorderRadius.circular(26),
                 ),
-                child: const Icon(Icons.store_rounded, color: Colors.white, size: 44),
+                child: const Icon(Icons.store_rounded, color: AppColors.white, size: 44),
               ),
               const SizedBox(height: 20),
               const Text(
                 'Alee Seller',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
@@ -77,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               const SizedBox(height: 8),
               Text(
                 'Manage your business',
-                style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+                style: TextStyle(color: AppColors.white.withValues(alpha: 0.6), fontSize: 14),
               ),
             ],
           ),
