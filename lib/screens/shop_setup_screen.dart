@@ -24,6 +24,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
   String _deliveryTime = '25 min';
   int _deliveryMin = 25;
   bool _freeDelivery = true;
+  bool _isOpen = true;
   bool _isLoading = false;
   bool _editMode = false;
 
@@ -61,6 +62,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
           _deliveryTime = shop['delivery_time']?.toString() ?? '25 min';
           _deliveryMin = shop['delivery_min'] ?? 25;
           _freeDelivery = shop['free_delivery'] ?? true;
+          _isOpen = shop['is_open'] ?? true;
           _deliveryFeeCtrl.text = _deliveryFee;
           _deliveryTimeCtrl.text = _deliveryTime;
           _deliveryMinCtrl.text = '$_deliveryMin';
@@ -96,6 +98,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
         'delivery_time': _deliveryTime,
         'delivery_min': _deliveryMin,
         'free_delivery': _freeDelivery,
+        'is_open': _isOpen,
         'category': _selectedCategory,
         'tags': _tagsController.text.trim(),
         'description': _descriptionController.text.trim(),
@@ -215,6 +218,28 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
                     hint: 'e.g. 25',
                     keyboard: TextInputType.number,
                     onChanged: (v) => _deliveryMin = int.tryParse(v) ?? _deliveryMin,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            _sectionHeader('Shop Status'),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Shop Open', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF9E9EAE), letterSpacing: 1)),
+                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        value: _isOpen,
+                        onChanged: (v) => setState(() => _isOpen = v),
+                        title: Text(_isOpen ? 'Open for orders' : 'Temporarily closed', style: const TextStyle(fontWeight: FontWeight.w600)),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ],
                   ),
                 ),
               ],

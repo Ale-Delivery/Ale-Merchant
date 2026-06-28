@@ -19,6 +19,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
   List<Map<String, dynamic>> _orders = [];
   bool _loading = true;
   String _filterStatus = 'pending';
+  String _dateFilter = 'all';
 
   final List<String> _statusOptions = ['pending', 'accepted', 'preparing', 'ready', 'delivered'];
 
@@ -38,6 +39,10 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
         var query = Supabase.instance.client.from('Orders').select().eq('restaurant_id', shop['id']);
         if (_filterStatus != 'all') {
           query = query.eq('status', _filterStatus);
+        }
+        if (_dateFilter == 'today') {
+          final todayStart = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).toUtc().toIso8601String();
+          query = query.gte('created_at', todayStart);
         }
         final orders = await query.order('created_at', ascending: false);
         if (mounted) setState(() { _orders = List<Map<String, dynamic>>.from(orders); _loading = false; });
@@ -66,6 +71,32 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
   }
 
   String _statusLabel(String status) => status[0].toUpperCase() + status.substring(1);
+
+  Widget _datePill(String label, String value) {
+    final selected = value == _dateFilter;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _dateFilter = value);
+        _loadOrders();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? _primary : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? _primary : const Color(0xFFEDEFF3)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: selected ? Colors.white : _ink,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +133,19 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                   ),
                 );
               },
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Date filter row
+          Container(
+            height: 36,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _datePill('All Time', 'all'),
+                const SizedBox(width: 8),
+                _datePill('Today', 'today'),
+              ],
             ),
           ),
           const SizedBox(height: 12),

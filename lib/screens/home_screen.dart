@@ -23,9 +23,14 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   int _pendingOrders = 0;
   int _totalMenuItems = 0;
   List<Map<String, dynamic>> _recentOrders = [];
-  List<Map<String, dynamic>> _previousOrders = [];
   bool _loading = true;
   StreamSubscription? _realtimeSub;
+
+  double _todayRevenue = 0;
+  int _todayOrders = 0;
+  double _weekRevenue = 0;
+  double _avgRating = 0;
+  List<Map<String, dynamic>> _reviews = [];
 
   @override
   void initState() {
@@ -63,6 +68,39 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             .select('id')
             .eq('restaurant_id', shopId);
 
+        final todayStart = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day).toUtc().toIso8601String();
+        final weekStart = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - DateTime.now().weekday + 1).toUtc().toIso8601String();
+
+        final todayDelivered = await Supabase.instance.client
+            .from('Orders')
+            .select('total')
+            .eq('restaurant_id', shopId)
+            .eq('status', 'delivered')
+            .gte('created_at', todayStart);
+
+        final todayAll = await Supabase.instance.client
+            .from('Orders')
+            .select('id')
+            .eq('restaurant_id', shopId)
+            .gte('created_at', todayStart);
+
+        final weekDelivered = await Supabase.instance.client
+            .from('Orders')
+            .select('total')
+            .eq('restaurant_id', shopId)
+            .eq('status', 'delivered')
+            .gte('created_at', weekStart);
+
+        final reviewsResult = await Supabase.instance.client
+            .from('Reviews')
+            .select('rating, comment, created_at')
+            .eq('restaurant_id', shopId)
+            .order('created_at', ascending: false)
+            .limit(3);
+
+        final reviewList = List<Map<String, dynamic>>.from(reviewsResult as List);
+        final avgRating = reviewList.isEmpty ? 0.0 : reviewList.fold<double>(0, (sum, r) => sum + ((r['rating'] as num?)?.toDouble() ?? 0)) / reviewList.length;
+
         final orderList = List<Map<String, dynamic>>.from(orders as List);
         final pending = orderList.where((o) => o['status'] == 'pending').toList();
 
@@ -71,8 +109,12 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             _shop = shop;
             _pendingOrders = pending.length;
             _totalMenuItems = (items as List).length;
-            _previousOrders = List.from(_recentOrders);
             _recentOrders = orderList;
+            _todayRevenue = todayDelivered.fold<double>(0, (sum, o) => sum + ((o['total'] as num?)?.toDouble() ?? 0));
+            _todayOrders = (todayAll as List).length;
+            _weekRevenue = weekDelivered.fold<double>(0, (sum, o) => sum + ((o['total'] as num?)?.toDouble() ?? 0));
+            _avgRating = avgRating;
+            _reviews = reviewList;
             _loading = false;
           });
         }
@@ -356,6 +398,18 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       children: [
+        // Revenue stats
+        Row(
+          children: [
+            Expanded(child: _revenueCard('Today Revenue', 'Rs. ${_todayRevenue.toStringAsFixed(0)}', Icons.attach_money_rounded, const Color(0xFF10B981))),
+            const SizedBox(width: 10),
+            Expanded(child: _revenueCard('Today Orders', '$_todayOrders', Icons.shopping_bag_rounded, const Color(0xFF3B82F6))),
+            const SizedBox(width: 10),
+            Expanded(child: _revenueCard('Week Revenue', 'Rs. ${_weekRevenue.toStringAsFixed(0)}', Icons.trending_up_rounded, const Color(0xFF8B5CF6))),
+          ],
+        ),
+        const SizedBox(height: 20),
+
         // Shop card — premium gradient
         Container(
           padding: const EdgeInsets.all(22),
@@ -489,6 +543,27 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         const SizedBox(height: 14),
         ActionTile(icon: Icons.edit_rounded, title: 'Edit Shop Details', onTap: () => SellerNavigator.shopSetup(context)),
         ActionTile(icon: Icons.restaurant_menu_rounded, title: 'Manage Menu Items', onTap: () => SellerNavigator.menuManagement(context)),
+
+        // Reviews
+        if (_reviews.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              const Expanded(
+                child: Text('Customer Reviews', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: _ink)),
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 18),
+                  const SizedBox(width: 4),
+                  Text(_avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: _ink)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ..._reviews.map((r) => _buildReviewCard(r)),
+        ],
 
         if (pendingOrders.isEmpty && _recentOrders.isEmpty)
           Padding(
@@ -726,6 +801,69 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             const Icon(Icons.chevron_right_rounded, color: Color(0xFFC0C0D0), size: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _revenueCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+      decoration: BoxDecoration(
+        color: _cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF0F1F5)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 34, height: 34,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 16),
+          ),
+          const SizedBox(height: 8),
+          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: _ink)),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(color: _muted, fontSize: 10, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewCard(Map<String, dynamic> review) {
+    final rating = (review['rating'] as num?)?.toDouble() ?? 0;
+    final comment = review['comment'] ?? '';
+    final createdAt = review['created_at'] as String?;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _cardWhite,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFF0F1F5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ...List.generate(5, (i) => Icon(
+                i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                color: i < rating ? const Color(0xFFF59E0B) : const Color(0xFFD1D5DB),
+                size: 16,
+              )),
+              const SizedBox(width: 8),
+              Text(_timeAgo(createdAt), style: const TextStyle(fontSize: 11, color: Color(0xFF9E9EAE))),
+            ],
+          ),
+          if (comment.toString().isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(comment.toString(), style: const TextStyle(fontSize: 13, color: _ink, height: 1.4)),
+          ],
+        ],
       ),
     );
   }
