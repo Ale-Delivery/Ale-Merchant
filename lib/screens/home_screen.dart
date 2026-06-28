@@ -52,7 +52,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         final shopId = shop['id'];
         final orders = await Supabase.instance.client
             .from('Orders')
-            .select('id, total, delivery_address, delivery_phone, delivery_notes, created_at, status')
+            .select('id, total, delivery_address, delivery_phone, delivery_notes, created_at, status, Order_Items(name)')
             .eq('restaurant_id', shopId)
             .order('created_at', ascending: false)
             .limit(10);
@@ -125,6 +125,16 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   }
 
   String _statusLabel(String s) => s[0].toUpperCase() + s.substring(1);
+
+  String _orderItemsPreview(Map<String, dynamic> order) {
+    final items = order['Order_Items'] as List?;
+    if (items == null || items.isEmpty) return 'No items';
+    final names = items.take(3).map((i) => i['name'] ?? '').where((n) => n.isNotEmpty).toList();
+    if (names.isEmpty) return 'No items';
+    final preview = names.join(', ');
+    if (items.length > 3) return '$preview +${items.length - 3} more';
+    return preview;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -452,6 +462,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
 
   Widget _buildRecentOrderCard(Map<String, dynamic> order) {
     final status = order['status'] ?? 'delivered';
+    final orderId = order['id']?.toString() ?? '';
+    final shortId = orderId.length > 8 ? '#${orderId.substring(0, 8)}' : '#$orderId';
     return GestureDetector(
       onTap: () => SellerNavigator.orderDetail(context, orderId: order['id']),
       child: Container(
@@ -476,10 +488,37 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink)),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          shortId,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF7D8491)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Rs. ${order['total'] ?? '0'}',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: _ink),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _orderItemsPreview(order),
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF7D8491)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
                   Text(
                     '${_statusLabel(status)} · ${_timeAgo(order['created_at'])}',
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF7D8491)),
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF9E9EAE)),
                   ),
                 ],
               ),
