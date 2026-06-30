@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
-import '../theme/app_theme.dart';
 import '../theme/theme_colors.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,25 +11,33 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fade;
+  late final Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000),
     );
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _scale = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    );
     _controller.forward();
     _navigate();
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 1000) + const Duration(seconds: 2));
     if (!mounted) return;
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     final phone = await LocalStorageService.getUserPhone();
     final profileComplete = await LocalStorageService.isProfileComplete();
@@ -54,34 +62,29 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       body: Center(
         child: FadeTransition(
           opacity: _fade,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: AppColors.orange,
-                  borderRadius: BorderRadius.circular(26),
+          child: ScaleTransition(
+            scale: _scale,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 160,
+                  height: 160,
+                  fit: BoxFit.contain,
                 ),
-                child: const Icon(Icons.store_rounded, color: AppColors.white, size: 44),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Alee Seller',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
+                const SizedBox(height: 24),
+                Text(
+                  'SELLER PORTAL',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: context.textMuted,
+                    letterSpacing: 4,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Manage your business',
-                style: TextStyle(color: AppColors.white.withValues(alpha: 0.6), fontSize: 14),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
