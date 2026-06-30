@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/theme_colors.dart';
 
 class GlassCard extends StatelessWidget {
   final Widget child;
@@ -23,7 +24,7 @@ class GlassCard extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24), 
         border: Border.all(
-          color: isDark ? AppColors.border.withOpacity(0.5) : AppColors.lightBorder.withOpacity(0.8),
+          color: context.cardBorder.withOpacity(isDark ? 0.5 : 0.8),
           width: 1,
         ),
         boxShadow: [

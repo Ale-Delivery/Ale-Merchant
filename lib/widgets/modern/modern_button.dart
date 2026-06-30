@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/theme_colors.dart';
 
 class ModernButton extends StatefulWidget {
   final String text;
@@ -49,7 +50,7 @@ class _ModernButtonState extends State<ModernButton> {
             gradient: widget.isSecondary ? null : AppGradients.primary,
             color: widget.isSecondary ? Theme.of(context).colorScheme.surface : null,
             border: widget.isSecondary 
-                ? Border.all(color: isDark ? AppColors.border : AppColors.lightBorder, width: 1.5) 
+                ? Border.all(color: context.cardBorder, width: 1.5) 
                 : null,
             boxShadow: widget.isSecondary ? [] : [
               BoxShadow(
@@ -75,7 +76,7 @@ class _ModernButtonState extends State<ModernButton> {
                       if (widget.icon != null) ...[
                         Icon(
                           widget.icon,
-                          color: widget.isSecondary ? AppColors.ink : Colors.white,
+                          color: widget.isSecondary ? context.textPrimary : Colors.white,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -87,7 +88,7 @@ class _ModernButtonState extends State<ModernButton> {
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
-                          color: widget.isSecondary ? AppColors.ink : Colors.white,
+                          color: widget.isSecondary ? context.textPrimary : Colors.white,
                         ),
                       ),
                     ],

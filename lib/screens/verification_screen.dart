@@ -3,6 +3,7 @@ import '../services/local_storage_service.dart';
 import '../services/auth_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -78,7 +79,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
@@ -87,16 +88,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: context.cardBg,
                   shape: BoxShape.circle,
                   boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 4))],
                 ),
-                child: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 18), onPressed: () => Navigator.pop(context)),
+                child: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.textPrimary, size: 18), onPressed: () => Navigator.pop(context)),
               ),
               const SizedBox(height: 32),
-              const Text('Verification', style: TextStyle(color: AppColors.ink, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.8)),
+              Text('Verification', style: TextStyle(color: context.textPrimary, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -0.8)),
               const SizedBox(height: 8),
-              Text('Enter OTP sent to ${widget.phoneNumber}', style: const TextStyle(color: AppColors.muted, fontSize: 15)),
+              Text('Enter OTP sent to ${widget.phoneNumber}', style: TextStyle(color: context.textMuted, fontSize: 15)),
               const SizedBox(height: 40),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -110,11 +111,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       textAlign: TextAlign.center,
                       maxLength: 1,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.ink),
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: context.textPrimary),
                       decoration: InputDecoration(
                         counterText: '',
                         filled: true,
-                        fillColor: AppColors.white,
+                        fillColor: context.inputBg,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                         focusedBorder: const OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(14)),

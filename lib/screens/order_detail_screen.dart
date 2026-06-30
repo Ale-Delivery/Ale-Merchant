@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -83,23 +84,23 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        backgroundColor: AppColors.bg,
+        backgroundColor: context.scaffoldBg,
         body: const Center(child: CircularProgressIndicator(color: AppColors.orange)),
       );
     }
 
     if (_error != null) {
       return Scaffold(
-        backgroundColor: AppColors.bg,
+        backgroundColor: context.scaffoldBg,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
         body: Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.error_outline, color: AppColors.muted, size: 48),
+            Icon(Icons.error_outline, color: context.textMuted, size: 48),
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppColors.muted)),
+            Text(_error!, style: TextStyle(color: context.textMuted)),
           ]),
         ),
       );
@@ -110,13 +111,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final statusColor = _statusColor(status);
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        title: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: const TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800, fontSize: 18)),
-        backgroundColor: Colors.white,
+        title: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: 18)),
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context, true),
         ),
       ),
@@ -187,10 +188,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
                         width: 52, height: 52,
-                        color: AppColors.divider,
-                        child: image.isNotEmpty
-                            ? Image.network(image, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.fastfood, color: AppColors.muted, size: 22))
-                            : const Icon(Icons.fastfood, color: AppColors.muted, size: 22),
+                          color: context.divider,
+                          child: image.isNotEmpty
+                            ? Image.network(image, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.fastfood, color: context.textMuted, size: 22))
+                            : Icon(Icons.fastfood, color: context.textMuted, size: 22),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -198,16 +199,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
+                          Text(name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: context.textPrimary)),
                           const SizedBox(height: 2),
                           Text(
                             '${size != null ? '$size · ' : ''}${qty}x',
-                            style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                            style: TextStyle(fontSize: 12, color: context.textMuted),
                           ),
                         ],
                       ),
                     ),
-                    Text('Rs. ${(price * (qty is int ? qty : 1)).toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
+                    Text('Rs. ${(price * (qty is int ? qty : 1)).toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: context.textPrimary)),
                   ],
                 ),
               );
@@ -266,14 +267,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink)),
+          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: context.textPrimary)),
           const SizedBox(height: 14),
           ...children,
         ],
@@ -289,17 +290,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, color: AppColors.muted, size: 16),
+            decoration: BoxDecoration(color: context.scaffoldBg, borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, color: context.textMuted, size: 16),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.muted)),
+                Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: context.textMuted)),
                 const SizedBox(height: 2),
-                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.textPrimary)),
               ],
             ),
           ),
@@ -312,8 +313,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: bold ? AppColors.ink : AppColors.muted)),
-        Text(value, style: TextStyle(fontSize: 14, fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: AppColors.ink)),
+        Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: bold ? context.textPrimary : context.textMuted)),
+        Text(value, style: TextStyle(fontSize: 14, fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: context.textPrimary)),
       ],
     );
   }

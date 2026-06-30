@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -49,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: context.scaffoldBg,
       body: Center(
         child: FadeTransition(
           opacity: _fade,

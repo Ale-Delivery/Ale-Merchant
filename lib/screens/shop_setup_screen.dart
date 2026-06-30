@@ -4,6 +4,7 @@ import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../widgets/common_widgets.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class ShopSetupScreen extends StatefulWidget {
   const ShopSetupScreen({super.key});
@@ -141,13 +142,13 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        title: Text(_editMode ? 'Edit Shop' : 'Create Shop', style: const TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800)),
+        title: Text(_editMode ? 'Edit Shop' : 'Create Shop', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.textPrimary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -186,7 +187,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Free Delivery', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1)),
+                      Text('Free Delivery', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.textHint, letterSpacing: 1)),
                       const SizedBox(height: 8),
                       SwitchListTile(
                         value: _freeDelivery,
@@ -231,7 +232,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Shop Open', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1)),
+                      Text('Shop Open', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.textHint, letterSpacing: 1)),
                       const SizedBox(height: 8),
                       SwitchListTile(
                         value: _isOpen,
@@ -261,7 +262,7 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
   Widget _sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+      child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.textPrimary)),
     );
   }
 
@@ -269,16 +270,16 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1)),
+        Text(label.toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.textHint, letterSpacing: 1)),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+          decoration: BoxDecoration(color: context.cardBg, borderRadius: BorderRadius.circular(14)),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary),
               items: items.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
               onChanged: onChanged,
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class PhoneAuthScreen extends StatefulWidget {
   const PhoneAuthScreen({super.key});
@@ -56,7 +57,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
@@ -73,30 +74,30 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                 child: const Icon(Icons.store_rounded, color: AppColors.orange, size: 28),
               ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'Welcome Seller!',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.ink, letterSpacing: -0.8),
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: context.textPrimary, letterSpacing: -0.8),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Manage your restaurant and orders.',
-                style: TextStyle(fontSize: 15, color: AppColors.muted, height: 1.5),
+                style: TextStyle(fontSize: 15, color: context.textMuted, height: 1.5),
               ),
               const SizedBox(height: 36),
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.ink),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: context.textPrimary),
                 decoration: InputDecoration(
                   hintText: '07X XXX XXXX',
-                  hintStyle: const TextStyle(color: AppColors.hint, fontSize: 15),
+                  hintStyle: TextStyle(color: context.textHint, fontSize: 15),
                   prefixIcon: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                    child: const Text('+94', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                    child: Text('+94', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.textPrimary)),
                   ),
                   prefixIconConstraints: const BoxConstraints(minWidth: 56),
                   filled: true,
-                  fillColor: AppColors.white,
+                  fillColor: context.inputBg,
                   contentPadding: const EdgeInsets.symmetric(vertical: 18),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),

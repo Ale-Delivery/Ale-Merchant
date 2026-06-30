@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class SellerProfileScreen extends StatefulWidget {
   const SellerProfileScreen({super.key});
@@ -85,7 +86,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.bold)),
+            child: Text('Cancel', style: TextStyle(color: context.textMuted, fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -103,10 +104,9 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     final surfaceColor = Theme.of(context).colorScheme.surface;
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? context.textPrimary;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -234,13 +234,13 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   }
 
   Widget _sectionHeader(String title) {
-    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.hint;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? context.textHint;
     return Text(title.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: mutedColor, letterSpacing: 1.5));
   }
 
   Widget _infoRow(IconData icon, String label, String value) {
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
-    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.muted;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? context.textPrimary;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? context.textMuted;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -269,8 +269,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   Widget _menuTile(IconData icon, String title, String subtitle, VoidCallback onTap) {
     final surfaceColor = Theme.of(context).colorScheme.surface;
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
-    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.muted;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? context.textPrimary;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? context.textMuted;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -344,8 +344,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     required bool selected,
     required VoidCallback onTap,
   }) {
-    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.muted;
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? context.textMuted;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? context.textPrimary;
 
     return InkWell(
       onTap: onTap,

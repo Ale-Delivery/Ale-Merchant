@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/local_storage_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 import '../navigation/seller_navigator.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/modern/glass_card.dart';
@@ -279,33 +280,33 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        backgroundColor: AppColors.bg,
+        backgroundColor: context.scaffoldBg,
         body: const Center(child: CircularProgressIndicator(color: AppColors.orange)),
       );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Alee Seller', style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800, fontSize: 20)),
+            Text('Alee Seller', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: 20)),
             if (_pendingOrders > 0) ...[
               const SizedBox(width: 8),
               _pendingBadge(_pendingOrders),
             ],
           ],
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outline_rounded, color: AppColors.muted),
+            icon: Icon(Icons.person_outline_rounded, color: context.textMuted),
             onPressed: () => SellerNavigator.profile(context),
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: AppColors.muted),
+            icon: Icon(Icons.logout, color: context.textMuted),
             onPressed: () async {
               await LocalStorageService.clearSession();
               if (mounted) SellerNavigator.phoneAuth(context);
@@ -360,9 +361,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
               child: const Icon(Icons.store_rounded, color: AppColors.orange, size: 44),
             ),
             const SizedBox(height: 28),
-            const Text('Welcome to Alee Seller', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.ink, letterSpacing: -0.5)),
+            Text('Welcome to Alee Seller', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: context.textPrimary, letterSpacing: -0.5)),
             const SizedBox(height: 10),
-            const Text('Create your restaurant and start receiving orders', textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted, fontSize: 15, height: 1.5)),
+            Text('Create your restaurant and start receiving orders', textAlign: TextAlign.center, style: TextStyle(color: context.textMuted, fontSize: 15, height: 1.5)),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
@@ -504,8 +505,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         if (pendingOrders.isNotEmpty) ...[
           Row(
             children: [
-              const Expanded(
-                child: Text('Pending Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+              Expanded(
+                child: Text('Pending Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.textPrimary)),
               ),
               _sectionAction('View All', () => SellerNavigator.orderManagement(context)),
             ],
@@ -519,8 +520,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         if (nonPendingOrders.isNotEmpty) ...[
           Row(
             children: [
-              const Expanded(
-                child: Text('Recent Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+              Expanded(
+                child: Text('Recent Orders', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.textPrimary)),
               ),
               _sectionAction('View All', () => SellerNavigator.orderManagement(context)),
             ],
@@ -531,7 +532,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         ],
 
         // Quick actions
-        const Text('Shop Management', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+        Text('Shop Management', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.textPrimary)),
         const SizedBox(height: 14),
         ActionTile(icon: Icons.edit_rounded, title: 'Edit Shop Details', onTap: () => SellerNavigator.shopSetup(context)),
         ActionTile(icon: Icons.restaurant_menu_rounded, title: 'Manage Menu Items', onTap: () => SellerNavigator.menuManagement(context)),
@@ -541,14 +542,14 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           const SizedBox(height: 24),
           Row(
             children: [
-              const Expanded(
-                child: Text('Customer Reviews', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+              Expanded(
+                child: Text('Customer Reviews', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.textPrimary)),
               ),
               Row(
                 children: [
                   const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 18),
                   const SizedBox(width: 4),
-                  Text(_avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                  Text(_avgRating.toStringAsFixed(1), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: context.textPrimary)),
                 ],
               ),
             ],
@@ -580,9 +581,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -596,9 +597,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(height: 14),
-          Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink)),
+          Text(value, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary)),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: context.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -626,9 +627,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('New Order', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.ink)),
+                    Text('New Order', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: context.textPrimary)),
                     if (itemsPreview != 'No items')
-                      Text(itemsPreview, style: const TextStyle(fontSize: 12, color: AppColors.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(itemsPreview, style: TextStyle(fontSize: 12, color: context.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -637,7 +638,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 children: [
                   Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.orange)),
                   const SizedBox(height: 2),
-                  Text(_timeAgo(order['created_at']), style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+                  Text(_timeAgo(order['created_at']), style: TextStyle(color: context.textMuted, fontSize: 11)),
                 ],
               ),
             ],
@@ -646,15 +647,15 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.bg,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                const Icon(Icons.location_on_outlined, color: AppColors.muted, size: 14),
+                Icon(Icons.location_on_outlined, color: context.textMuted, size: 14),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Text('${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: AppColors.muted, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: Text('${order['delivery_address'] ?? 'N/A'}', style: TextStyle(color: context.textMuted, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ],
             ),
@@ -662,7 +663,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           if (order['delivery_notes'] != null && order['delivery_notes'].toString().isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('Note: ${order['delivery_notes']}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              child: Text('Note: ${order['delivery_notes']}', style: TextStyle(color: context.textMuted, fontSize: 12)),
             ),
           const SizedBox(height: 14),
           Row(
@@ -707,8 +708,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 child: ElevatedButton(
                   onPressed: () => SellerNavigator.orderDetail(context, orderId: order['id']),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.divider,
-                    foregroundColor: AppColors.ink,
+                    backgroundColor: context.divider,
+                    foregroundColor: context.textPrimary,
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -734,9 +735,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: context.divider),
         ),
         child: Row(
           children: [
@@ -757,15 +758,15 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(5)),
-                        child: Text(shortId, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.muted)),
+                        decoration: BoxDecoration(color: context.divider, borderRadius: BorderRadius.circular(5)),
+                        child: Text(shortId, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.textMuted)),
                       ),
                       const SizedBox(width: 8),
-                      Text('Rs. ${order['total'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.ink)),
+                      Text('Rs. ${order['total'] ?? '0'}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: context.textPrimary)),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(_orderItemsPreview(order), style: const TextStyle(fontSize: 12, color: AppColors.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(_orderItemsPreview(order), style: TextStyle(fontSize: 12, color: context.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 3),
                   Row(
                     children: [
@@ -781,7 +782,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.muted, size: 20),
+            Icon(Icons.chevron_right_rounded, color: context.textMuted, size: 20),
           ],
         ),
       ),
@@ -792,9 +793,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.divider),
       ),
       child: Column(
         children: [
@@ -807,9 +808,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
             child: Icon(icon, color: color, size: 16),
           ),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.ink)),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: context.textPrimary)),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 10, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: context.textMuted, fontSize: 10, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -824,9 +825,9 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: context.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -839,12 +840,12 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
                 size: 16,
               )),
               const SizedBox(width: 8),
-              Text(_timeAgo(createdAt), style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+              Text(_timeAgo(createdAt), style: TextStyle(fontSize: 11, color: context.textMuted)),
             ],
           ),
           if (comment.toString().isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(comment.toString(), style: const TextStyle(fontSize: 13, color: AppColors.ink, height: 1.4)),
+            Text(comment.toString(), style: TextStyle(fontSize: 13, color: context.textPrimary, height: 1.4)),
           ],
         ],
       ),

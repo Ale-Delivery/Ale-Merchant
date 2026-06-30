@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
 import '../widgets/common_widgets.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class MenuManagementScreen extends StatefulWidget {
   const MenuManagementScreen({super.key});
@@ -80,7 +81,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: AppColors.muted))),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: TextStyle(color: context.textMuted))),
           ElevatedButton(
             onPressed: () {
               if (nameCtrl.text.trim().isEmpty || priceCtrl.text.trim().isEmpty) return;
@@ -148,12 +149,12 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Menu Items', style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800)),
+        title: Text('Menu Items', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.textPrimary, size: 20), onPressed: () => Navigator.pop(context)),
       ),
       floatingActionButton: _shopId != null ? FloatingActionButton(
         onPressed: () => _showAddEditDialog(),
@@ -177,7 +178,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                      decoration: BoxDecoration(color: context.cardBg, borderRadius: BorderRadius.circular(16)),
                       child: Row(
                         children: [
                           Container(
@@ -192,7 +193,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                               Text('Rs. ${item['price']}', style: const TextStyle(color: AppColors.orange, fontWeight: FontWeight.w800, fontSize: 16)),
                             ]),
                           ),
-                          IconButton(icon: const Icon(Icons.edit_rounded, color: AppColors.muted, size: 20), onPressed: () => _showAddEditDialog(item: item)),
+                          IconButton(icon: Icon(Icons.edit_rounded, color: context.textMuted, size: 20), onPressed: () => _showAddEditDialog(item: item)),
                           IconButton(icon: const Icon(Icons.delete_outline_rounded, color: AppColors.red, size: 20), onPressed: () => _deleteItem(item['id'])),
                         ],
                       ),

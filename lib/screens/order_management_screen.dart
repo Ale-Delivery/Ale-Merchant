@@ -4,6 +4,7 @@ import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../widgets/common_widgets.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 class OrderManagementScreen extends StatefulWidget {
   const OrderManagementScreen({super.key});
@@ -80,16 +81,16 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? AppColors.orange : Colors.white,
+          color: selected ? AppColors.orange : context.surfaceColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? AppColors.orange : AppColors.border),
+          border: Border.all(color: selected ? AppColors.orange : context.cardBorder),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: selected ? Colors.white : AppColors.ink,
+            color: selected ? Colors.white : context.textPrimary,
           ),
         ),
       ),
@@ -99,12 +100,12 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Orders', style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800)),
+        title: Text('Orders', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.textPrimary, size: 20), onPressed: () => Navigator.pop(context)),
       ),
       body: Column(
         children: [
@@ -121,13 +122,13 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
-                    label: Text(_statusLabel(s), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: selected ? Colors.white : AppColors.ink)),
+                    label: Text(_statusLabel(s), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: selected ? Colors.white : context.textPrimary)),
                     selected: selected,
                     onSelected: (_) { setState(() => _filterStatus = s); _loadOrders(); },
                     selectedColor: _statusColor(s),
-                    backgroundColor: Colors.white,
+                    backgroundColor: context.surfaceColor,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    side: BorderSide(color: selected ? _statusColor(s) : AppColors.border),
+                    side: BorderSide(color: selected ? _statusColor(s) : context.cardBorder),
                   ),
                 );
               },
@@ -164,7 +165,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                           final status = order['status'] ?? 'pending';
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                            decoration: BoxDecoration(color: context.surfaceColor, borderRadius: BorderRadius.circular(16)),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(16),
                               onTap: () async {
@@ -177,7 +178,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(children: [
-                                      Expanded(child: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink))),
+                                      Expanded(child: Text('Order #${order['id']?.toString().substring(0, 8) ?? ''}', style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary))),
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(color: _statusColor(status).withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
@@ -187,10 +188,10 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                                     const SizedBox(height: 10),
                                     Text('Rs. ${order['total']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.orange)),
                                     const SizedBox(height: 6),
-                                    Text('Address: ${order['delivery_address'] ?? 'N/A'}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                                    Text('Address: ${order['delivery_address'] ?? 'N/A'}', style: TextStyle(color: context.textMuted, fontSize: 12)),
                                     if (order['delivery_notes'] != null && order['delivery_notes'].toString().isNotEmpty) ...[
                                       const SizedBox(height: 2),
-                                      Text('Notes: ${order['delivery_notes']}', style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                                      Text('Notes: ${order['delivery_notes']}', style: TextStyle(color: context.textMuted, fontSize: 12)),
                                     ],
                                     const SizedBox(height: 12),
                                     if (status == 'pending')

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../theme/theme_colors.dart';
 
 /// Reusable stat card for dashboard overviews.
 class StatCard extends StatelessWidget {
@@ -23,9 +24,9 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,9 +40,9 @@ class StatCard extends StatelessWidget {
             child: Icon(icon, color: fgColor, size: 20),
           ),
           const SizedBox(height: 14),
-          Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.ink)),
+          Text(value, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary)),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: context.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -69,7 +70,7 @@ class ActionTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: AppColors.white,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -83,10 +84,10 @@ class ActionTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary),
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                Icon(Icons.chevron_right_rounded, color: context.textMuted),
               ],
             ),
           ),
@@ -157,7 +158,7 @@ class SellerTextField extends StatelessWidget {
       children: [
         Text(
           '${label.toUpperCase()}${required ? ' *' : ''}',
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1),
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.textHint, letterSpacing: 1),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -165,12 +166,12 @@ class SellerTextField extends StatelessWidget {
           maxLines: maxLines,
           keyboardType: keyboard,
           onChanged: onChanged,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.hint, fontSize: 14),
+            hintStyle: TextStyle(color: context.textHint, fontSize: 14),
             filled: true,
-            fillColor: AppColors.white,
+            fillColor: context.inputBg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -240,9 +241,9 @@ class EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.muted, size: 64),
+          Icon(icon, color: context.textMuted, size: 64),
           const SizedBox(height: 12),
-          Text(message, style: const TextStyle(color: AppColors.muted, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(message, style: TextStyle(color: context.textMuted, fontSize: 16, fontWeight: FontWeight.w600)),
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: 18),
             ElevatedButton.icon(

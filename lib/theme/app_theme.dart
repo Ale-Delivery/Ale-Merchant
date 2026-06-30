@@ -195,11 +195,11 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: const Color(0xFF181B22),
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.all(Radius.circular(20)),
-          side: const BorderSide(color: AppColors.border, width: 1),
+          side: const BorderSide(color: Color(0xFF2A2D35), width: 1),
         ),
         margin: const EdgeInsets.only(bottom: 12),
       ),
@@ -331,11 +331,11 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.lightSurface,
+        color: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.all(Radius.circular(20)),
-          side: const BorderSide(color: AppColors.lightBorder, width: 1),
+          side: const BorderSide(color: Color(0xFFE5E7EB), width: 1),
         ),
         margin: const EdgeInsets.only(bottom: 12),
       ),
