@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
 import '../services/auth_service.dart';
 import '../navigation/seller_navigator.dart';
+import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
 
 class SellerProfileScreen extends StatefulWidget {
@@ -101,14 +103,19 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
+
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        title: const Text('My Profile', style: TextStyle(color: AppColors.ink, fontWeight: FontWeight.w800)),
-        backgroundColor: Colors.white,
+        title: Text('My Profile', style: TextStyle(color: textColor, fontWeight: FontWeight.w800)),
+        backgroundColor: surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.ink, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -180,7 +187,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(color: surfaceColor, borderRadius: BorderRadius.circular(20)),
                     child: Column(
                       children: [
                         if (_email != null && _email!.isNotEmpty)
@@ -200,6 +207,11 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                 _menuTile(Icons.edit_rounded, 'Edit Shop Details', '', () => SellerNavigator.shopSetup(context)),
                 _menuTile(Icons.restaurant_menu_rounded, 'Manage Menu', '', () => SellerNavigator.menuManagement(context)),
                 _menuTile(Icons.receipt_long_rounded, 'Order Management', '', () => SellerNavigator.orderManagement(context)),
+                const SizedBox(height: 28),
+
+                _sectionHeader('Appearance'),
+                const SizedBox(height: 12),
+                _buildThemeSelector(),
                 const SizedBox(height: 32),
 
                 SizedBox(
@@ -222,27 +234,31 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   }
 
   Widget _sectionHeader(String title) {
-    return Text(title.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.hint, letterSpacing: 1.5));
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.hint;
+    return Text(title.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: mutedColor, letterSpacing: 1.5));
   }
 
   Widget _infoRow(IconData icon, String label, String value) {
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.muted;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: AppColors.muted, size: 18),
+            decoration: BoxDecoration(color: Theme.of(context).dividerColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: mutedColor, size: 18),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted, fontWeight: FontWeight.bold)),
+                Text(label, style: TextStyle(fontSize: 11, color: mutedColor, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 3),
-                Text(value, style: const TextStyle(fontSize: 14, color: AppColors.ink, fontWeight: FontWeight.w700)),
+                Text(value, style: TextStyle(fontSize: 14, color: textColor, fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -252,10 +268,14 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   }
 
   Widget _menuTile(IconData icon, String title, String subtitle, VoidCallback onTap) {
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.muted;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -272,12 +292,83 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                 ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                  child: Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: textColor)),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+                Icon(Icons.chevron_right_rounded, color: mutedColor),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeSelector() {
+    final themeProvider = context.watch<ThemeProvider>();
+    final current = themeProvider.themeMode;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          _themeOption(
+            icon: Icons.light_mode_rounded,
+            title: 'Light',
+            selected: current == ThemeMode.light,
+            onTap: () => themeProvider.setThemeMode(ThemeMode.light),
+          ),
+          _themeOption(
+            icon: Icons.dark_mode_rounded,
+            title: 'Dark',
+            selected: current == ThemeMode.dark,
+            onTap: () => themeProvider.setThemeMode(ThemeMode.dark),
+          ),
+          _themeOption(
+            icon: Icons.phone_android_rounded,
+            title: 'System',
+            selected: current == ThemeMode.system,
+            onTap: () => themeProvider.setThemeMode(ThemeMode.system),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _themeOption({
+    required IconData icon,
+    required String title,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final mutedColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.muted;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.ink;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: selected ? AppColors.orange : mutedColor),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  color: selected ? AppColors.orange : textColor,
+                ),
+              ),
+            ),
+            if (selected)
+              const Icon(Icons.check_circle_rounded, color: AppColors.orange, size: 22),
+          ],
         ),
       ),
     );

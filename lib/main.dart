@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'constants/app_constants.dart';
 import 'navigation/app_routes.dart';
 import 'navigation/seller_navigator.dart';
+import 'providers/theme_provider.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -13,7 +15,12 @@ Future<void> main() async {
     anonKey: AppConstants.supabaseAnonKey,
   );
 
-  runApp(const AleeSellerApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const AleeSellerApp(),
+    ),
+  );
 }
 
 class AleeSellerApp extends StatelessWidget {
@@ -21,14 +28,18 @@ class AleeSellerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Alee Seller',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      initialRoute: AppRoutes.splash,
-      onGenerateRoute: SellerNavigator.generateRoute,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'Alee Seller',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          initialRoute: AppRoutes.splash,
+          onGenerateRoute: SellerNavigator.generateRoute,
+        );
+      },
     );
   }
 }
