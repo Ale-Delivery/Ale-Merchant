@@ -24,7 +24,9 @@ class AleeSellerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Alee Seller',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       initialRoute: AppRoutes.splash,
       onGenerateRoute: SellerNavigator.generateRoute,
     );

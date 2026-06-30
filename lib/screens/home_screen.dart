@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../services/local_storage_service.dart';
 import '../theme/app_theme.dart';
 import '../navigation/seller_navigator.dart';
 import '../widgets/common_widgets.dart';
+import '../widgets/modern/glass_card.dart';
 
 class SellerHomeScreen extends StatefulWidget {
   const SellerHomeScreen({super.key});
@@ -604,17 +606,8 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
 
   Widget _buildPendingOrderCard(Map<String, dynamic> order) {
     final itemsPreview = _orderItemsPreview(order);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+    return GlassCard(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFFF59E0B).withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -726,7 +719,7 @@ class _SellerHomeScreenState extends State<SellerHomeScreen> {
           ),
         ],
       ),
-    );
+    ).animate().fade(duration: 400.ms).slideY(begin: 0.1, duration: 400.ms, curve: Curves.easeOutCubic);
   }
 
   Widget _buildRecentOrderCard(Map<String, dynamic> order) {
