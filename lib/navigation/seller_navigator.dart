@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../screens/splash_screen.dart';
 import '../screens/phone_auth_screen.dart';
 import '../screens/verification_screen.dart';
+import '../screens/main_shell.dart';
 import '../screens/home_screen.dart';
 import '../screens/shop_setup_screen.dart';
 import '../screens/menu_management_screen.dart';
@@ -26,7 +27,7 @@ class SellerNavigator {
           expectedOtp: args['otp']!,
         ));
       case AppRoutes.home:
-        return _route(const SellerHomeScreen());
+        return _route(const MainShell());
       case AppRoutes.shopSetup:
         return _route(const ShopSetupScreen());
       case AppRoutes.menuManagement:
@@ -62,7 +63,7 @@ class SellerNavigator {
   }
 
   static void home(BuildContext context, {bool clearStack = true}) {
-    final route = MaterialPageRoute(builder: (_) => const SellerHomeScreen());
+    final route = MaterialPageRoute(builder: (_) => const MainShell());
     if (clearStack) {
       Navigator.of(context).pushAndRemoveUntil(route, (_) => false);
     } else {
