@@ -28,7 +28,8 @@ class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
           centerTitle: centerTitle,
           actions: actions,
           leading: leading,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.7),
+          backgroundColor:
+              Theme.of(context).scaffoldBackgroundColor.withOpacity(0.7),
           elevation: 0,
         ),
       ),

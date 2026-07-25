@@ -4,6 +4,7 @@ import '../theme/theme_colors.dart';
 import 'home_screen.dart';
 import 'order_management_screen.dart';
 import 'menu_management_screen.dart';
+import 'notifications_screen.dart';
 import 'profile_screen.dart';
 
 class MainShell extends StatefulWidget {
@@ -20,7 +21,7 @@ class _MainShellState extends State<MainShell> {
     const SellerHomeScreen(),
     const OrderManagementScreen(),
     const MenuManagementScreen(),
-    const _NotificationsPlaceholder(),
+    const NotificationsScreen(),
     const SellerProfileScreen(),
   ];
 
@@ -70,34 +71,6 @@ class _MainShellState extends State<MainShell> {
                   icon: Icon(Icons.person_rounded), label: 'Profile'),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NotificationsPlaceholder extends StatelessWidget {
-  const _NotificationsPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.scaffoldBg,
-      appBar: AppBar(
-        title: const Text('Notifications',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.notifications_rounded, size: 64, color: AppColors.muted),
-            const SizedBox(height: 16),
-            Text('No notifications yet',
-                style: TextStyle(fontSize: 16, color: AppColors.muted)),
-          ],
         ),
       ),
     );

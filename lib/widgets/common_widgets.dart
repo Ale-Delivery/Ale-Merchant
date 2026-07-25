@@ -32,7 +32,8 @@ class StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 42, height: 42,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(12),
@@ -40,9 +41,17 @@ class StatCard extends StatelessWidget {
             child: Icon(icon, color: fgColor, size: 20),
           ),
           const SizedBox(height: 14),
-          Text(value, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: context.textPrimary)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: context.textPrimary)),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(color: context.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label,
+              style: TextStyle(
+                  color: context.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -84,7 +93,10 @@ class ActionTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     title,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary),
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: context.textPrimary),
                   ),
                 ),
                 Icon(Icons.chevron_right_rounded, color: context.textMuted),
@@ -123,7 +135,11 @@ class StatPill extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white70, size: 14),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(label,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -158,7 +174,11 @@ class SellerTextField extends StatelessWidget {
       children: [
         Text(
           '${label.toUpperCase()}${required ? ' *' : ''}',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: context.textHint, letterSpacing: 1),
+          style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: context.textHint,
+              letterSpacing: 1),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -166,7 +186,10 @@ class SellerTextField extends StatelessWidget {
           maxLines: maxLines,
           keyboardType: keyboard,
           onChanged: onChanged,
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary),
+          style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: context.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: context.textHint, fontSize: 14),
@@ -210,11 +233,18 @@ class SellerButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.orange,
           foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: isLoading
-            ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
-            : Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                    color: AppColors.white, strokeWidth: 2))
+            : Text(label,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
       ),
     );
   }
@@ -243,7 +273,11 @@ class EmptyState extends StatelessWidget {
         children: [
           Icon(icon, color: context.textMuted, size: 64),
           const SizedBox(height: 12),
-          Text(message, style: TextStyle(color: context.textMuted, fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(message,
+              style: TextStyle(
+                  color: context.textMuted,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600)),
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: 18),
             ElevatedButton.icon(
@@ -253,7 +287,8 @@ class EmptyState extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.orange,
                 foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
             ),
           ],

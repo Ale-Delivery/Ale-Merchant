@@ -35,7 +35,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(milliseconds: 1000) + const Duration(seconds: 2));
+    await Future.delayed(
+        const Duration(milliseconds: 1000) + const Duration(seconds: 2));
     if (!mounted) return;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 

@@ -28,17 +28,17 @@ class AuthService {
     );
   }
 
-  // 2. Dummy OTP එක යවන Function එක 
+  // 2. Dummy OTP එක යවන Function එක
   Future<String> sendDummyOTP(String phoneNumber) async {
     await Future.delayed(const Duration(seconds: 2));
-    
-    String dummyOtp = "1234"; 
-    
+
+    String dummyOtp = "1234";
+
     print("=======================================");
-    print("Mock SMS: Sent to $phoneNumber | OTP Code: $dummyOtp"); 
+    print("Mock SMS: Sent to $phoneNumber | OTP Code: $dummyOtp");
     print("=======================================");
-    
-    return dummyOtp; 
+
+    return dummyOtp;
   }
 
   // 3. Profile save — Supabase sync is best-effort; always returns userId for local session.
@@ -116,7 +116,8 @@ class AuthService {
     required String address,
     required String phone,
   }) async {
-    debugPrint('[saveDeliveryAddress] userId=$userId label=$label address=$address phone=$phone');
+    debugPrint(
+        '[saveDeliveryAddress] userId=$userId label=$label address=$address phone=$phone');
     try {
       final payload = {
         'delivery_label': label,

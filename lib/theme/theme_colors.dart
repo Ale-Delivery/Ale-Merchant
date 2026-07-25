@@ -16,13 +16,11 @@ extension ThemeColors on BuildContext {
   Color get textHint =>
       isDark ? const Color(0xFF5C5C6F) : const Color(0xFF9CA3AF);
 
-  Color get cardBg =>
-      isDark ? const Color(0xFF181B22) : Colors.white;
+  Color get cardBg => isDark ? const Color(0xFF181B22) : Colors.white;
   Color get cardBorder =>
       isDark ? const Color(0xFF2A2D35) : const Color(0xFFE5E7EB);
 
-  Color get inputBg =>
-      isDark ? const Color(0xFF13151A) : Colors.white;
+  Color get inputBg => isDark ? const Color(0xFF13151A) : Colors.white;
 
   Color get chipBg =>
       isDark ? const Color(0xFF1E2128) : const Color(0xFFF3F4F6);
@@ -36,8 +34,7 @@ extension ThemeColors on BuildContext {
   Color get shimmerHighlight =>
       isDark ? const Color(0xFF22252D) : const Color(0xFFE0E0E0);
 
-  Color get appBarBg =>
-      isDark ? const Color(0xFF0F1117) : Colors.white;
+  Color get appBarBg => isDark ? const Color(0xFF0F1117) : Colors.white;
 
   List<BoxShadow> get cardShadow => isDark
       ? [

@@ -16,7 +16,7 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color bg = Color(0xFF0F1014); // Deep Dark bg
   static const Color surface = Color(0xFF16181D); // Dark surface
-  
+
   static const Color lightBg = Color(0xFFF8F9FA); // Light bg
   static const Color lightSurface = Color(0xFFFFFFFF); // Light surface
 
@@ -26,13 +26,13 @@ class AppColors {
   static const Color hint = Color(0xFF71717A); // Zinc-500
 
   static const Color lightInk = Color(0xFF0F1014); // Dark text
-  static const Color lightMuted = Color(0xFF71717A); 
+  static const Color lightMuted = Color(0xFF71717A);
   static const Color lightHint = Color(0xFFA1A1AA);
 
   // ── Borders & Dividers ───────────────────────────────────────
   static const Color border = Color(0xFF272A30);
   static const Color divider = Color(0xFF272A30);
-  
+
   static const Color lightBorder = Color(0xFFE4E4E7);
   static const Color lightDivider = Color(0xFFE4E4E7);
 
@@ -97,7 +97,8 @@ class AppTheme {
   static const Color greyText = AppColors.muted;
 
   static ThemeData get darkTheme {
-    final baseDarkText = GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme);
+    final baseDarkText =
+        GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme);
 
     return ThemeData(
       useMaterial3: true,
@@ -233,7 +234,8 @@ class AppTheme {
   }
 
   static ThemeData get lightTheme {
-    final baseLightText = GoogleFonts.outfitTextTheme(ThemeData.light().textTheme);
+    final baseLightText =
+        GoogleFonts.outfitTextTheme(ThemeData.light().textTheme);
 
     return ThemeData(
       useMaterial3: true,
@@ -267,11 +269,13 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
         bodyLarge: baseLightText.bodyLarge?.copyWith(color: AppColors.lightInk),
-        bodyMedium: baseLightText.bodyMedium?.copyWith(color: AppColors.lightInk),
-        bodySmall: baseLightText.bodySmall?.copyWith(color: AppColors.lightMuted),
+        bodyMedium:
+            baseLightText.bodyMedium?.copyWith(color: AppColors.lightInk),
+        bodySmall:
+            baseLightText.bodySmall?.copyWith(color: AppColors.lightMuted),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent, 
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         foregroundColor: AppColors.lightInk,

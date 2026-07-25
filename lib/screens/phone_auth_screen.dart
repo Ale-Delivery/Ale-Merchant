@@ -19,7 +19,10 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     String phoneNumber = _phoneController.text.trim();
     if (phoneNumber.isEmpty || phoneNumber.length < 9) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid phone number'), backgroundColor: AppColors.red, behavior: SnackBarBehavior.floating),
+        const SnackBar(
+            content: Text('Please enter a valid phone number'),
+            backgroundColor: AppColors.red,
+            behavior: SnackBarBehavior.floating),
       );
       return;
     }
@@ -40,7 +43,10 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.red, behavior: SnackBarBehavior.floating),
+          SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: AppColors.red,
+              behavior: SnackBarBehavior.floating),
         );
       }
     } finally {
@@ -71,29 +77,43 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   color: AppColors.orangeLight,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.store_rounded, color: AppColors.orange, size: 28),
+                child: const Icon(Icons.store_rounded,
+                    color: AppColors.orange, size: 28),
               ),
               const SizedBox(height: 32),
               Text(
                 'Welcome Seller!',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: context.textPrimary, letterSpacing: -0.8),
+                style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: context.textPrimary,
+                    letterSpacing: -0.8),
               ),
               const SizedBox(height: 8),
               Text(
                 'Manage your restaurant and orders.',
-                style: TextStyle(fontSize: 15, color: context.textMuted, height: 1.5),
+                style: TextStyle(
+                    fontSize: 15, color: context.textMuted, height: 1.5),
               ),
               const SizedBox(height: 36),
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: context.textPrimary),
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: context.textPrimary),
                 decoration: InputDecoration(
                   hintText: '07X XXX XXXX',
                   hintStyle: TextStyle(color: context.textHint, fontSize: 15),
                   prefixIcon: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                    child: Text('+94', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.textPrimary)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 16),
+                    child: Text('+94',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: context.textPrimary)),
                   ),
                   prefixIconConstraints: const BoxConstraints(minWidth: 56),
                   filled: true,
@@ -118,16 +138,21 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.orange,
                     foregroundColor: AppColors.white,
-                    disabledBackgroundColor: AppColors.orange.withValues(alpha: 0.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    disabledBackgroundColor:
+                        AppColors.orange.withValues(alpha: 0.5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
                   child: _isLoading
                       ? const SizedBox(
                           width: 22,
                           height: 22,
-                          child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                              color: AppColors.white, strokeWidth: 2),
                         )
-                      : const Text('Send OTP', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                      : const Text('Send OTP',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w800)),
                 ),
               ),
             ],
