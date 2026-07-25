@@ -60,8 +60,9 @@ class _OperationsScreenState extends State<OperationsScreen> {
   };
 
   Future<void> _load() async {
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final String userId = user.id;
     try {
       final shop = await Supabase.instance.client
           .from('Restaurants')
@@ -85,8 +86,9 @@ class _OperationsScreenState extends State<OperationsScreen> {
   Future<void> _save() async {
     setState(() => _isSaving = true);
     try {
-      final userId = await LocalStorageService.getUserId();
-      if (userId == null) return;
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+      final String userId = user.id;
       final shop = await Supabase.instance.client
           .from('Restaurants')
           .select('id')

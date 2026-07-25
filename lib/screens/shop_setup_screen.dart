@@ -20,7 +20,6 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
   final _descriptionController = TextEditingController();
   final _imageUrlController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
 
   String _selectedCategory = 'Burger';
   bool _isLoading = false;
@@ -52,13 +51,13 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
   }
 
   Future<void> _loadExistingShop() async {
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
     try {
       final shop = await Supabase.instance.client
           .from('Restaurants')
           .select()
-          .eq('owner_id', userId)
+          .eq('owner_id', user.id)
           .maybeSingle();
       if (shop != null && mounted) {
         setState(() {
@@ -69,7 +68,6 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
           _descriptionController.text = shop['description'] ?? '';
           _imageUrlController.text = shop['image_url'] ?? '';
           _phoneController.text = shop['phone'] ?? '';
-          _emailController.text = shop['email'] ?? '';
           _selectedCategory = shop['category'] ?? 'Burger';
         });
       }
@@ -83,8 +81,15 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
           behavior: SnackBarBehavior.floating));
       return;
     }
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    final userId = user?.id;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Please sign in first'),
+          backgroundColor: AppColors.red,
+          behavior: SnackBarBehavior.floating));
+      return;
+    }
     setState(() => _isLoading = true);
     try {
       final shopId = 'rest-${DateTime.now().millisecondsSinceEpoch}';
@@ -100,7 +105,6 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
         'description': _descriptionController.text.trim(),
         'address': _addressController.text.trim(),
         'phone': _phoneController.text.trim(),
-        'email': _emailController.text.trim(),
         'owner_id': userId,
       });
       if (mounted) {
@@ -130,7 +134,6 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
     _descriptionController.dispose();
     _imageUrlController.dispose();
     _phoneController.dispose();
-    _emailController.dispose();
     super.dispose();
   }
 
@@ -184,13 +187,6 @@ class _ShopSetupScreenState extends State<ShopSetupScreen> {
                   controller: _phoneController,
                   hint: 'e.g. 077 123 4567',
                   keyboard: TextInputType.phone,
-                  required: false),
-              const SizedBox(height: 16),
-              SellerTextField(
-                  label: 'Email Address',
-                  controller: _emailController,
-                  hint: 'e.g. store@example.com',
-                  keyboard: TextInputType.emailAddress,
                   required: false),
               const SizedBox(height: 16),
               SellerTextField(

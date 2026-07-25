@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/local_storage_service.dart';
 import '../navigation/seller_navigator.dart';
 import '../theme/theme_colors.dart';
@@ -40,13 +41,21 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    final phone = await LocalStorageService.getUserPhone();
-    final profileComplete = await LocalStorageService.isProfileComplete();
+    // Check Supabase auth session first
+    final session = Supabase.instance.client.auth.currentSession;
+    final user = Supabase.instance.client.auth.currentUser;
 
-    if (phone != null && profileComplete) {
+    if (session != null && user != null) {
       SellerNavigator.home(context, clearStack: true);
     } else {
-      SellerNavigator.phoneAuth(context);
+      // Fallback to local storage for backward compatibility
+      final phone = await LocalStorageService.getUserPhone();
+      final profileComplete = await LocalStorageService.isProfileComplete();
+      if (phone != null && profileComplete) {
+        SellerNavigator.home(context, clearStack: true);
+      } else {
+        SellerNavigator.phoneAuth(context);
+      }
     }
   }
 

@@ -56,8 +56,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   Future<void> _load() async {
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final String userId = user.id;
     try {
       final shop = await Supabase.instance.client
           .from('Restaurants')

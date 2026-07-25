@@ -59,8 +59,9 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   }
 
   Future<void> _loadItems() async {
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final String userId = user.id;
 
     try {
       final shop = await Supabase.instance.client

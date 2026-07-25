@@ -12,7 +12,7 @@ class PhoneAuthScreen extends StatefulWidget {
 }
 
 class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
-  final TextEditingController _phoneController = TextEditingController();
+  final _phoneController = TextEditingController();
   bool _isLoading = false;
 
   Future<void> _sendOtp() async {
@@ -21,34 +21,36 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Please enter a valid phone number'),
-            backgroundColor: AppColors.red,
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating),
       );
       return;
     }
 
     if (!phoneNumber.startsWith('+')) {
-      phoneNumber = '+94$phoneNumber';
+      if (phoneNumber.startsWith('0')) {
+        phoneNumber = '+94${phoneNumber.substring(1)}';
+      } else {
+        phoneNumber = '+94$phoneNumber';
+      }
     }
 
     setState(() => _isLoading = true);
 
     try {
       final authService = AuthService();
-      final otp = await authService.sendDummyOTP(phoneNumber);
-
-      if (mounted) {
-        SellerNavigator.verification(context, phone: phoneNumber, otp: otp);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: AppColors.red,
-              behavior: SnackBarBehavior.floating),
-        );
-      }
+      await authService.sendOtp(phoneNumber);
+      if (!mounted) return;
+      SellerNavigator.verification(context, phone: phoneNumber, otp: '');
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -63,7 +65,7 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.scaffoldBg,
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
@@ -81,78 +83,121 @@ class _PhoneAuthScreenState extends State<PhoneAuthScreen> {
                     color: AppColors.orange, size: 28),
               ),
               const SizedBox(height: 32),
-              Text(
-                'Welcome Seller!',
-                style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: context.textPrimary,
-                    letterSpacing: -0.8),
-              ),
+              const Text('Merchant Login',
+                  style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black87)),
               const SizedBox(height: 8),
-              Text(
-                'Manage your restaurant and orders.',
-                style: TextStyle(
-                    fontSize: 15, color: context.textMuted, height: 1.5),
-              ),
+              const Text('Enter your phone number to manage your store.',
+                  style: TextStyle(
+                      fontSize: 15, color: AppColors.muted, height: 1.5)),
               const SizedBox(height: 36),
-              TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: context.textPrimary),
-                decoration: InputDecoration(
-                  hintText: '07X XXX XXXX',
-                  hintStyle: TextStyle(color: context.textHint, fontSize: 15),
-                  prefixIcon: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 16),
-                    child: Text('+94',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: context.textPrimary)),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(minWidth: 56),
-                  filled: true,
-                  fillColor: context.inputBg,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(16)),
-                    borderSide: BorderSide(color: AppColors.orange, width: 1.5),
-                  ),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8))
+                  ],
                 ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _sendOtp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.orange,
-                    foregroundColor: AppColors.white,
-                    disabledBackgroundColor:
-                        AppColors.orange.withValues(alpha: 0.5),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                              color: AppColors.white, strokeWidth: 2),
-                        )
-                      : const Text('Send OTP',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w800)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('PHONE NUMBER',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.muted,
+                            letterSpacing: 1.2)),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) {
+                        if (!_isLoading) _sendOtp();
+                      },
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87),
+                      decoration: InputDecoration(
+                        hintText: '07X XXX XXXX',
+                        hintStyle: TextStyle(
+                            color: Colors.grey.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w500),
+                        prefixIcon: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 14),
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            border: Border(
+                                right: BorderSide(
+                                    color: Colors.grey.withValues(alpha: 0.2),
+                                    width: 1.5)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🇱🇰',
+                                  style: TextStyle(fontSize: 20)),
+                              const SizedBox(width: 6),
+                              const Text('+94',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.black87)),
+                            ],
+                          ),
+                        ),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(16)),
+                          borderSide:
+                              BorderSide(color: AppColors.orange, width: 1.5),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFF3F4F6),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _sendOtp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.orange,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              AppColors.orange.withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2))
+                            : const Text('Send OTP',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w800)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

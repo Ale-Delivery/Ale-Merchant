@@ -32,10 +32,9 @@ class SellerNavigator {
       case AppRoutes.phoneAuth:
         return _route(const PhoneAuthScreen());
       case AppRoutes.verification:
-        final args = settings.arguments as Map<String, String>;
+        final args = settings.arguments as Map<String, dynamic>;
         return _route(VerificationScreen(
-          phoneNumber: args['phone']!,
-          expectedOtp: args['otp']!,
+          phoneNumber: args['phone'] as String,
         ));
       case AppRoutes.home:
         return _route(const MainShell());
@@ -92,11 +91,9 @@ class SellerNavigator {
   }
 
   static void verification(BuildContext context,
-      {required String phone, required String otp}) {
+      {required String phone, String? otp}) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (_) =>
-              VerificationScreen(phoneNumber: phone, expectedOtp: otp)),
+      MaterialPageRoute(builder: (_) => VerificationScreen(phoneNumber: phone)),
     );
   }
 

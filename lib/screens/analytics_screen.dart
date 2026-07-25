@@ -38,8 +38,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Future<void> _loadAnalytics() async {
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final String userId = user.id;
 
     try {
       final shop = await Supabase.instance.client
@@ -539,11 +540,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           child: Row(
             children: _peakHours.asMap().entries.map((e) {
               final hour = e.value;
-              final label = hour < 12
-                  ? '${hour}AM'
-                  : hour == 12
-                      ? '12PM'
-                      : '${hour - 12}PM';
               final amPm = hour < 12 ? 'AM' : 'PM';
               final displayHour = hour == 0
                   ? 12

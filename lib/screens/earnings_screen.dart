@@ -33,8 +33,9 @@ class _EarningsScreenState extends State<EarningsScreen> {
   }
 
   Future<void> _loadEarnings() async {
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final String userId = user.id;
 
     try {
       final shop = await Supabase.instance.client

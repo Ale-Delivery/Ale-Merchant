@@ -88,8 +88,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   Future<void> _load() async {
-    final userId = await LocalStorageService.getUserId();
-    if (userId == null) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final String userId = user.id;
     try {
       final shop = await Supabase.instance.client
           .from('Restaurants')
@@ -214,8 +215,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     Navigator.pop(ctx);
                   }),
                 if (current != null && current >= 0)
-                  _actionBtn(Icons.all_inclusive, 'Mark Unlimited',
-                      () async {
+                  _actionBtn(Icons.all_inclusive, 'Mark Unlimited', () async {
                     await _updateStock(id, -1);
                     Navigator.pop(ctx);
                   }),
@@ -264,7 +264,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     child: const Text('Confirm')),
               ],
             )).then((qty) async {
-      if (qty != null && id != null) {
+      if (qty != null) {
         final current =
             _items.firstWhere((i) => i['id'] == id)['stock'] as num?;
         final base = (current ?? 0) as int;
@@ -301,7 +301,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     child: const Text('Save')),
               ],
             )).then((v) async {
-      if (v != null && id != null) await _updateStock(id, v as int);
+      if (v != null) await _updateStock(id, v as int);
     });
   }
 
@@ -333,7 +333,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     child: const Text('Save')),
               ],
             )).then((v) async {
-      if (v != null && id != null) await _updateThreshold(id, v as int);
+      if (v != null) await _updateThreshold(id, v as int);
     });
   }
 
